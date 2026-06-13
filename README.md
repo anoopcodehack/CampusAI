@@ -19,8 +19,6 @@ Student types "When is the last date to pay fees?" → AI answers instantly
 
 <img width="1595" height="776" alt="image" src="https://github.com/user-attachments/assets/b045f216-06c1-45fb-b05c-af38270c352b" />
 
-# CampusAI 🤖
-### Your College's Own AI Assistant
 ---
 
 ## ✨ Features
