@@ -8,6 +8,7 @@ What it does:
 Student types "When is the last date to pay fees?" → AI answers instantly
 "Which professor handles CN lab?" → instant answer
 "What are the hostel rules?" → instant answer
+"Every college has information scattered across WhatsApp groups, notice boards, and faculty emails. CampusAI brings it all together — one AI assistant that answers any student question instantly. No searching, no waiting, just ask."
 <img width="1890" height="876" alt="image" src="https://github.com/user-attachments/assets/34892c3b-cde8-42ed-a60c-3caf45437380" />
 
 <img width="1697" height="875" alt="image" src="https://github.com/user-attachments/assets/ee0291c0-f20d-47e7-a8f8-78a8f5c6822d" />
