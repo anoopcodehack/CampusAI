@@ -1,5 +1,22 @@
-# CampusAI Backend 🚀
+# 🚀 CampusAI — Your College's Own AI Assistant
 
+"Ask anything about your college — exams, fees, hostel rules, clubs, faculty — and get instant answers."
+
+Think ChatGPT but trained on your college's data.
+What it does:
+
+Student types "When is the last date to pay fees?" → AI answers instantly
+"Which professor handles CN lab?" → instant answer
+"What are the hostel rules?" → instant answer
+<img width="1890" height="876" alt="image" src="https://github.com/user-attachments/assets/34892c3b-cde8-42ed-a60c-3caf45437380" />
+
+<img width="1697" height="875" alt="image" src="https://github.com/user-attachments/assets/ee0291c0-f20d-47e7-a8f8-78a8f5c6822d" />
+
+<img width="1882" height="847" alt="image" src="https://github.com/user-attachments/assets/f2f41c58-61b3-4501-b2ad-1a4caeddd1e1" />
+
+<img width="1595" height="776" alt="image" src="https://github.com/user-attachments/assets/b045f216-06c1-45fb-b05c-af38270c352b" />
+
+# Backend
 ## Setup in 5 minutes
 
 ### 1. Install dependencies
