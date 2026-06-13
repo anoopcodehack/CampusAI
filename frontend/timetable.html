@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timetable — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --warn:#f59e0b;--font:'Nunito',sans-serif;
+  --cn:#6366f1; --mes:#e5473b; --daa:#f59e0b; --dbms:#22c55e; --se:#06b6d4; --lab:#7c3aed;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+/* TOP BAR */
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+/* SIDEBAR */
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+/* MAIN */
+.main{padding:32px 28px 80px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.ph-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.ph-right{display:flex;gap:10px;flex-wrap:wrap}
+.btn-ai{font-size:.68rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:11px 18px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-ai:hover{background:var(--lime-dark)}
+.btn-white{font-size:.68rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:transparent;color:var(--white);border:2px solid rgba(255,255,255,.3);padding:11px 18px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-white:hover{border-color:var(--white)}
+
+/* TODAY BANNER */
+.today-banner{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0;border:2px solid var(--black);background:var(--white);margin-bottom:24px}
+.tb-slot{padding:18px 16px;border-right:2px solid var(--black);position:relative}
+.tb-slot:last-child{border-right:none}
+.tb-time{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+.tb-subject{font-size:.92rem;font-weight:900;color:var(--black)}
+.tb-room{font-size:.65rem;font-weight:700;color:var(--gray);margin-top:3px}
+.tb-now{position:absolute;top:0;left:0;right:0;height:3px}
+.tb-status{font-size:.52rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;margin-top:8px;display:inline-block}
+
+/* AI ALERT */
+.ai-alert{border:2px solid var(--black);background:var(--white);margin-bottom:24px;display:flex;align-items:flex-start;gap:0}
+.aa-icon-col{background:var(--lime);width:56px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;border-right:2px solid var(--black)}
+.aa-body{padding:16px 20px;flex:1}
+.aa-label{font-size:.52rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.aa-label .dot{width:5px;height:5px;background:var(--lime-dark);border-radius:50%;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.aa-title{font-size:.95rem;font-weight:900;color:var(--black);margin-bottom:4px}
+.aa-text{font-size:.8rem;font-weight:700;color:var(--dark-gray);line-height:1.6}
+.aa-text strong{color:var(--black)}
+
+/* WEEK NAV */
+.week-nav{display:flex;align-items:center;justify-content:space-between;border:2px solid var(--black);background:var(--white);margin-bottom:0;padding:14px 20px}
+.wn-title{font-size:.88rem;font-weight:900;color:var(--black)}
+.wn-days{display:flex;gap:0}
+.wn-day{padding:8px 16px;font-size:.68rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-right:2px solid var(--black);background:var(--white);color:var(--gray);transition:all .15s;border-top:2px solid var(--black);border-bottom:2px solid var(--black);border-left:none}
+.wn-day:first-child{border-left:2px solid var(--black)}
+.wn-day:hover{background:var(--off-white)}
+.wn-day.today{background:var(--black);color:var(--lime)}
+.wn-day.has-exam{border-bottom:3px solid var(--red)}
+.wn-arrows{display:flex;gap:0;border:2px solid var(--black)}
+.wn-arrow{width:36px;height:36px;background:var(--white);border:none;cursor:pointer;font-size:1rem;font-family:var(--font);font-weight:900;transition:background .15s;border-right:2px solid var(--black)}
+.wn-arrow:last-child{border-right:none}
+.wn-arrow:hover{background:var(--black);color:var(--white)}
+
+/* TIMETABLE GRID */
+.tt-grid-wrap{border:2px solid var(--black);border-top:none;background:var(--white);overflow-x:auto;margin-bottom:24px}
+.tt-grid{min-width:700px}
+.tt-header-row{display:grid;grid-template-columns:80px repeat(5,1fr);background:var(--black)}
+.tt-col-head{padding:14px 12px;text-align:center;font-size:.6rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--white);border-right:2px solid rgba(255,255,255,.08)}
+.tt-col-head:last-child{border-right:none}
+.tt-col-head.today-col{color:var(--lime);background:rgba(200,240,0,.07)}
+.tt-col-head span{display:block;font-size:.52rem;color:rgba(255,255,255,.35);margin-top:2px;letter-spacing:1px}
+.tt-time-row{display:grid;grid-template-columns:80px repeat(5,1fr);border-bottom:2px solid var(--border)}
+.tt-time-row:last-child{border-bottom:none}
+.tt-time-label{padding:0 12px;display:flex;align-items:center;justify-content:center;border-right:2px solid var(--border);background:var(--off-white);min-height:88px;text-align:center}
+.tt-time-text{font-size:.72rem;font-weight:900;color:var(--black);line-height:1.3}
+.tt-time-sub{font-size:.55rem;font-weight:700;color:var(--gray);margin-top:2px}
+.tt-cell{padding:8px;border-right:2px solid var(--border);min-height:88px;position:relative}
+.tt-cell:last-child{border-right:none}
+.tt-cell.today-cell{background:rgba(200,240,0,.03)}
+.tt-cell.empty{background:var(--white)}
+.tt-cell.break-cell{background:var(--off-white)}
+
+/* CLASS BLOCK */
+.class-block{height:100%;padding:10px 12px;border-left:4px solid;position:relative;cursor:pointer;transition:all .15s;animation:blockIn .3s ease both}
+@keyframes blockIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:translateX(0)}}
+.class-block:hover{filter:brightness(.95)}
+.class-block.now-block{border-left-width:4px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.15)}
+.cb-subject{font-size:.8rem;font-weight:900;color:var(--black);line-height:1.2;margin-bottom:3px}
+.cb-room{font-size:.6rem;font-weight:700;color:var(--dark-gray);margin-bottom:4px;display:flex;align-items:center;gap:3px}
+.cb-faculty{font-size:.6rem;font-weight:700;color:var(--gray)}
+.cb-now-badge{position:absolute;top:6px;right:6px;font-size:.45rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:var(--black);color:var(--lime);padding:2px 5px}
+.cb-exam-warn{position:absolute;bottom:6px;right:6px;font-size:.45rem;font-weight:900;background:var(--red);color:var(--white);padding:2px 5px}
+
+/* BREAK LABEL */
+.break-label{height:100%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--gray)}
+
+/* LEGEND */
+.legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 16px;border:2px solid var(--black);border-top:none;background:var(--white);margin-bottom:24px}
+.legend-label{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray)}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;color:var(--dark-gray)}
+.leg-dot{width:14px;height:14px;flex-shrink:0;border-left:4px solid}
+
+/* FREE PERIODS INSIGHT */
+.free-insight{background:var(--white);border:2px solid var(--black);margin-bottom:24px}
+.fi-header{background:var(--black);padding:13px 18px;display:flex;align-items:center;justify-content:space-between}
+.fi-title{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.fi-badge{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:var(--lime);color:var(--black);padding:3px 9px}
+.fi-body{padding:18px 20px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.fi-day{border:2px solid var(--black);padding:14px 12px}
+.fi-day-name{font-size:.58rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+.fi-free-slot{background:var(--off-white);border-left:3px solid var(--lime);padding:7px 9px;margin-bottom:6px;font-size:.7rem;font-weight:800;color:var(--dark-gray)}
+.fi-free-slot.study{border-left-color:var(--success);background:#f0fff4}
+.fi-free-slot.exam-prep{border-left-color:var(--red);background:#fff8f8}
+.fi-free-slot-label{font-size:.48rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:2px}
+.fi-free-slot.study .fi-free-slot-label{color:#15803d}
+.fi-free-slot.exam-prep .fi-free-slot-label{color:var(--red)}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);font-size:.82rem;font-weight:900;padding:14px 28px;border:2px solid rgba(255,255,255,.15);z-index:999;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* CLASS DETAIL POPUP */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.popup-overlay.open{display:flex}
+.popup-box{background:var(--white);border:3px solid var(--black);width:100%;max-width:420px;animation:popIn .22s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.popup-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--black)}
+.popup-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--gray);line-height:1}
+.popup-close:hover{color:var(--black)}
+.popup-body{padding:20px}
+.popup-subject{font-size:1.3rem;font-weight:900;color:var(--black);margin-bottom:12px}
+.popup-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.popup-row{display:flex;justify-content:space-between;font-size:.82rem;padding:8px 0;border-bottom:1px solid var(--light-gray)}
+.popup-row:last-child{border-bottom:none}
+.popup-key{font-weight:700;color:var(--gray)}
+.popup-val{font-weight:900;color:var(--black)}
+.popup-ai{background:var(--off-white);border-left:3px solid var(--lime);padding:12px 14px}
+.popup-ai-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:5px}
+.popup-ai-text{font-size:.8rem;font-weight:700;color:var(--dark-gray);line-height:1.6}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .today-banner{grid-template-columns:1fr 1fr}
+  .fi-body{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div>
+      <div class="tb-name">Anoop K.</div>
+      <div class="tb-role">4SF23CS021 · CSE IV</div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="examtracker.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="timetable.html" class="nav-item active"><span class="icon">📚</span> Timetable</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item"><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div><div class="su-name">Anoop K.</div><div class="su-roll">4SF23CS021</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">✦ AI SCHEDULE OPTIMIZER</div>
+        <div class="ph-title">Weekly Timetable</div>
+        <div class="ph-sub">Live class schedule with AI-detected free slots, exam warnings, and study time suggestions.</div>
+      </div>
+      <div class="ph-right">
+        <button class="btn-ai" onclick="showToast('🤖 AI analysed your week — 3 free slots ideal for CN lab prep!')">
+          ✦ Optimize My Week
+        </button>
+        <button class="btn-white" onclick="showToast('📥 Timetable exported to calendar!')">
+          Export to Calendar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TODAY'S QUICK VIEW -->
+  <div class="today-banner">
+    <div class="tb-slot">
+      <div class="tb-time">9:00 – 10:00 AM</div>
+      <div class="tb-subject">Computer Networks</div>
+      <div class="tb-room">📍 Room 301</div>
+      <div class="tb-now" style="background:var(--success)"></div>
+      <span class="tb-status" style="background:#f0fff4;color:#15803d;border:1.5px solid #86efac">✓ DONE</span>
+    </div>
+    <div class="tb-slot" style="background:rgba(200,240,0,.05);border-left:3px solid var(--lime)">
+      <div class="tb-time">10:00 – 11:00 AM</div>
+      <div class="tb-subject">Microprocessors</div>
+      <div class="tb-room">📍 Room 204</div>
+      <div class="tb-now" style="background:var(--lime)"></div>
+      <span class="tb-status" style="background:var(--lime);color:var(--black);font-size:.52rem;font-weight:900;letter-spacing:1px;padding:3px 8px;display:inline-block;margin-top:8px">▶ NOW</span>
+    </div>
+    <div class="tb-slot">
+      <div class="tb-time">11:00 AM – 12:00 PM</div>
+      <div class="tb-subject">DAA</div>
+      <div class="tb-room">📍 Room 301</div>
+      <div class="tb-now" style="background:var(--warn)"></div>
+      <span class="tb-status" style="background:#fffbeb;color:#92400e;border:1.5px solid #fde047">NEXT</span>
+    </div>
+    <div class="tb-slot">
+      <div class="tb-time">2:00 – 5:00 PM</div>
+      <div class="tb-subject">CN Lab Practical</div>
+      <div class="tb-room">📍 Lab Block 3</div>
+      <div class="tb-now" style="background:var(--lab)"></div>
+      <span class="tb-status" style="background:#f5f3ff;color:#5b21b6;border:1.5px solid #c4b5fd">LAB</span>
+    </div>
+  </div>
+
+  <!-- AI ALERT -->
+  <div class="ai-alert">
+    <div class="aa-icon-col">✦</div>
+    <div class="aa-body">
+      <div class="aa-label"><div class="dot"></div>CAMPUSAI SCHEDULE INSIGHT</div>
+      <div class="aa-title">You have a CN Lab exam tomorrow — use today's 12–2 PM free slot wisely.</div>
+      <div class="aa-text">AI detected a <strong>2-hour free window today (12 PM – 2 PM)</strong> before your lab exam. This is the ideal time to practice socket programming and review Wireshark commands. <strong>Don't waste it.</strong> Also: DAA attendance is low — skip no more DAA classes this week.</div>
+    </div>
+  </div>
+
+  <!-- WEEK NAV -->
+  <div class="week-nav">
+    <div class="wn-title">Week of June 9 – 14, 2026</div>
+    <div class="wn-days">
+      <div class="wn-day" onclick="setDay(this)">MON<br><span style="font-size:.55rem;color:var(--gray)">9</span></div>
+      <div class="wn-day" onclick="setDay(this)">TUE<br><span style="font-size:.55rem;color:var(--gray)">10</span></div>
+      <div class="wn-day" onclick="setDay(this)">WED<br><span style="font-size:.55rem;color:var(--gray)">11</span></div>
+      <div class="wn-day today" onclick="setDay(this)">THU<br><span style="font-size:.55rem;color:rgba(200,240,0,.6)">13</span></div>
+      <div class="wn-day has-exam" onclick="setDay(this)" title="CN Lab Exam">FRI<br><span style="font-size:.55rem;color:var(--gray)">14</span></div>
+    </div>
+    <div class="wn-arrows">
+      <button class="wn-arrow" onclick="showToast('← Previous week')">‹</button>
+      <button class="wn-arrow" onclick="showToast('Today highlighted!')">●</button>
+      <button class="wn-arrow" onclick="showToast('→ Next week')">›</button>
+    </div>
+  </div>
+
+  <!-- TIMETABLE GRID -->
+  <div class="tt-grid-wrap">
+    <div class="tt-grid">
+      <!-- HEADER -->
+      <div class="tt-header-row">
+        <div class="tt-col-head" style="font-size:.52rem">TIME</div>
+        <div class="tt-col-head">MON <span>Jun 9</span></div>
+        <div class="tt-col-head">TUE <span>Jun 10</span></div>
+        <div class="tt-col-head">WED <span>Jun 11</span></div>
+        <div class="tt-col-head today-col">THU <span>Jun 13 ★</span></div>
+        <div class="tt-col-head">FRI <span>Jun 14</span></div>
+      </div>
+
+      <!-- 9:00 AM -->
+      <div class="tt-time-row">
+        <div class="tt-time-label"><div><div class="tt-time-text">9:00</div><div class="tt-time-sub">AM</div></div></div>
+        <div class="tt-cell" onclick="openPopup('Computer Networks','Room 301','Prof. Sharma','Mon 9–10 AM','3 hrs/week','High attendance required')">
+          <div class="class-block" style="background:#eef2ff;border-left-color:var(--cn)">
+            <div class="cb-subject">Computer Networks</div>
+            <div class="cb-room">📍 Room 301</div>
+            <div class="cb-faculty">Prof. Sharma</div>
+          </div>
+        </div>
+        <div class="tt-cell" onclick="openPopup('DAA','Room 204','Prof. Nair','Tue 9–10 AM','3 hrs/week','Low attendance — attend!')">
+          <div class="class-block" style="background:#fffbeb;border-left-color:var(--daa)">
+            <div class="cb-subject">DAA</div>
+            <div class="cb-room">📍 Room 204</div>
+            <div class="cb-faculty">Prof. Nair</div>
+            <div class="cb-exam-warn">EXAM Jun 21</div>
+          </div>
+        </div>
+        <div class="tt-cell" onclick="openPopup('DBMS','Room 302','Prof. Patel','Wed 9–10 AM','2 hrs/week','Attendance ok')">
+          <div class="class-block" style="background:#f0fff4;border-left-color:var(--dbms)">
+            <div class="cb-subject">DBMS</div>
+            <div class="cb-room">📍 Room 302</div>
+            <div class="cb-faculty">Prof. Patel</div>
+          </div>
+        </div>
+        <div class="tt-cell today-cell" onclick="openPopup('Computer Networks','Room 301','Prof. Sharma','Thu 9–10 AM','3 hrs/week','✓ Attended today')">
+          <div class="class-block now-block" style="background:#eef2ff;border-left-color:var(--cn)">
+            <div class="cb-subject">Computer Networks</div>
+            <div class="cb-room">📍 Room 301</div>
+            <div class="cb-faculty">Prof. Sharma</div>
+          </div>
+        </div>
+        <div class="tt-cell" onclick="openPopup('MES','Room 204','Prof. Kumar','Fri 9–10 AM','2 hrs/week','Attend — low pct warning')">
+          <div class="class-block" style="background:#fff1f1;border-left-color:var(--mes)">
+            <div class="cb-subject">MES</div>
+            <div class="cb-room">📍 Room 204</div>
+            <div class="cb-faculty">Prof. Kumar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10:00 AM -->
+      <div class="tt-time-row">
+        <div class="tt-time-label"><div><div class="tt-time-text">10:00</div><div class="tt-time-sub">AM</div></div></div>
+        <div class="tt-cell" onclick="openPopup('MES','Room 204','Prof. Kumar','Mon 10–11 AM','2 hrs/week','Attendance ok')">
+          <div class="class-block" style="background:#fff1f1;border-left-color:var(--mes)">
+            <div class="cb-subject">MES</div>
+            <div class="cb-room">📍 Room 204</div>
+            <div class="cb-faculty">Prof. Kumar</div>
+          </div>
+        </div>
+        <div class="tt-cell empty"></div>
+        <div class="tt-cell" onclick="openPopup('Computer Networks','Room 301','Prof. Sharma','Wed 10–11 AM','3 hrs/week','Attendance ok')">
+          <div class="class-block" style="background:#eef2ff;border-left-color:var(--cn)">
+            <div class="cb-subject">Computer Networks</div>
+            <div class="cb-room">📍 Room 301</div>
+            <div class="cb-faculty">Prof. Sharma</div>
+          </div>
+        </div>
+        <div class="tt-cell today-cell" onclick="openPopup('MES','Room 204','Prof. Kumar','Thu 10–11 AM','2 hrs/week','▶ Happening NOW')">
+          <div class="class-block now-block" style="background:#fff1f1;border-left-color:var(--mes)">
+            <div class="cb-subject">Microprocessors</div>
+            <div class="cb-room">📍 Room 204</div>
+            <div class="cb-faculty">Prof. Kumar</div>
+            <div class="cb-now-badge">▶ NOW</div>
+          </div>
+        </div>
+        <div class="tt-cell empty" style="background:#f8f8f8">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--lime-dark);border:2px dashed var(--lime);padding:8px;text-align:center">
+            ✦ AI: Use for CN lab prep
+          </div>
+        </div>
+      </div>
+
+      <!-- 11:00 AM -->
+      <div class="tt-time-row">
+        <div class="tt-time-label"><div><div class="tt-time-text">11:00</div><div class="tt-time-sub">AM</div></div></div>
+        <div class="tt-cell" onclick="openPopup('DAA','Room 301','Prof. Nair','Mon 11–12 PM','3 hrs/week','⚠ Low attendance!')">
+          <div class="class-block" style="background:#fffbeb;border-left-color:var(--daa)">
+            <div class="cb-subject">DAA</div>
+            <div class="cb-room">📍 Room 301</div>
+            <div class="cb-faculty">Prof. Nair</div>
+            <div class="cb-exam-warn">LOW ATT.</div>
+          </div>
+        </div>
+        <div class="tt-cell" onclick="openPopup('DBMS','Room 302','Prof. Patel','Tue 11–12 PM','2 hrs/week','Attendance ok')">
+          <div class="class-block" style="background:#f0fff4;border-left-color:var(--dbms)">
+            <div class="cb-subject">DBMS</div>
+            <div class="cb-room">📍 Room 302</div>
+            <div class="cb-faculty">Prof. Patel</div>
+          </div>
+        </div>
+        <div class="tt-cell" onclick="openPopup('MES','Room 204','Prof. Kumar','Wed 11–12 PM','2 hrs/week','Attendance ok')">
+          <div class="class-block" style="background:#fff1f1;border-left-color:var(--mes)">
+            <div class="cb-subject">MES</div>
+            <div class="cb-room">📍 Room 204</div>
+            <div class="cb-faculty">Prof. Kumar</div>
+          </div>
+        </div>
+        <div class="tt-cell today-cell" onclick="openPopup('DAA','Room 301','Prof. Nair','Thu 11–12 PM','3 hrs/week','⚠ Must attend — low %')">
+          <div class="class-block" style="background:#fffbeb;border-left-color:var(--daa)">
+            <div class="cb-subject">DAA</div>
+            <div class="cb-room">📍 Room 301</div>
+            <div class="cb-faculty">Prof. Nair</div>
+            <div class="cb-exam-warn">⚠ ATTEND</div>
+          </div>
+        </div>
+        <div class="tt-cell empty"></div>
+      </div>
+
+      <!-- LUNCH BREAK -->
+      <div class="tt-time-row">
+        <div class="tt-time-label"><div><div class="tt-time-text">12:00</div><div class="tt-time-sub">LUNCH</div></div></div>
+        <div class="tt-cell break-cell"><div class="break-label">LUNCH BREAK</div></div>
+        <div class="tt-cell break-cell"><div class="break-label">LUNCH BREAK</div></div>
+        <div class="tt-cell break-cell"><div class="break-label">LUNCH BREAK</div></div>
+        <div class="tt-cell break-cell today-cell" style="background:rgba(200,240,0,.06)">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;padding:8px;text-align:center">
+            <div style="font-size:.6rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark)">✦ FREE SLOT</div>
+            <div style="font-size:.72rem;font-weight:800;color:var(--dark-gray)">12–2 PM · AI suggests: CN Lab prep</div>
+          </div>
+        </div>
+        <div class="tt-cell break-cell"><div class="break-label">LUNCH BREAK</div></div>
+      </div>
+
+      <!-- 2:00 PM -->
+      <div class="tt-time-row">
+        <div class="tt-time-label"><div><div class="tt-time-text">2:00</div><div class="tt-time-sub">PM</div></div></div>
+        <div class="tt-cell" onclick="openPopup('CN Lab','Lab Block 3','Prof. Sharma','Mon 2–5 PM','3 hrs session','Attendance: Compulsory')">
+          <div class="class-block" style="background:#f5f3ff;border-left-color:var(--lab);min-height:80px">
+            <div class="cb-subject">CN Lab</div>
+            <div class="cb-room">📍 Lab Block 3</div>
+            <div class="cb-faculty">Prof. Sharma</div>
+            <div class="cb-exam-warn">3 HRS</div>
+          </div>
+        </div>
+        <div class="tt-cell" onclick="openPopup('SE','Room 301','Prof. Rao','Tue 2–3 PM','1 hr/week','Attendance ok')">
+          <div class="class-block" style="background:#ecfeff;border-left-color:var(--se)">
+            <div class="cb-subject">Software Eng.</div>
+            <div class="cb-room">📍 Room 301</div>
+            <div class="cb-faculty">Prof. Rao</div>
+          </div>
+        </div>
+        <div class="tt-cell empty"></div>
+        <div class="tt-cell today-cell" onclick="openPopup('CN Lab Exam PREP','Lab Block 3','Prof. Sharma','Thu 2–5 PM','EXAM TOMORROW','⚠ Last practice session!')">
+          <div class="class-block" style="background:#f5f3ff;border-left-color:var(--lab);min-height:80px">
+            <div class="cb-subject">CN Lab</div>
+            <div class="cb-room">📍 Lab Block 3</div>
+            <div class="cb-faculty">Prof. Sharma</div>
+            <div class="cb-now-badge" style="background:var(--red)">EXAM EVE</div>
+          </div>
+        </div>
+        <div class="tt-cell" style="background:#fff8f8;border:2px dashed var(--red)" onclick="showToast('⚠ CN Lab Exam tomorrow 10 AM — Lab Block 3. Bring hall ticket!')">
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;padding:8px;text-align:center">
+            <div style="font-size:1.2rem">⚠</div>
+            <div style="font-size:.62rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--red)">CN LAB EXAM</div>
+            <div style="font-size:.65rem;font-weight:800;color:var(--dark-gray)">10:00 AM · Lab 3</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span class="legend-label">Subjects:</span>
+    <div class="leg-item"><div class="leg-dot" style="border-left-color:var(--cn);background:#eef2ff"></div>CN</div>
+    <div class="leg-item"><div class="leg-dot" style="border-left-color:var(--mes);background:#fff1f1"></div>MES</div>
+    <div class="leg-item"><div class="leg-dot" style="border-left-color:var(--daa);background:#fffbeb"></div>DAA</div>
+    <div class="leg-item"><div class="leg-dot" style="border-left-color:var(--dbms);background:#f0fff4"></div>DBMS</div>
+    <div class="leg-item"><div class="leg-dot" style="border-left-color:var(--lab);background:#f5f3ff"></div>Lab</div>
+    <div class="leg-item"><div class="leg-dot" style="border-left-color:var(--se);background:#ecfeff"></div>SE</div>
+    <span style="margin-left:auto;font-size:.6rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--gray)">★ Today · ⚠ Exam · ▶ Now · ✦ AI Suggested Free Slot</span>
+  </div>
+
+  <!-- FREE SLOTS INSIGHT -->
+  <div class="free-insight">
+    <div class="fi-header">
+      <span class="fi-title">✦ AI — Optimal Study Slots This Week</span>
+      <span class="fi-badge">PERSONALIZED</span>
+    </div>
+    <div class="fi-body">
+      <div class="fi-day">
+        <div class="fi-day-name">MON</div>
+        <div class="fi-free-slot study">
+          <div class="fi-free-slot-label">FREE SLOT</div>
+          12–2 PM · Study DBMS
+        </div>
+      </div>
+      <div class="fi-day">
+        <div class="fi-day-name">TUE</div>
+        <div class="fi-free-slot study">
+          <div class="fi-free-slot-label">FREE SLOT</div>
+          10–11 AM · Revise DAA
+        </div>
+        <div class="fi-free-slot study">
+          <div class="fi-free-slot-label">FREE SLOT</div>
+          3–5 PM · Practice CN Lab
+        </div>
+      </div>
+      <div class="fi-day">
+        <div class="fi-day-name">WED</div>
+        <div class="fi-free-slot study">
+          <div class="fi-free-slot-label">FREE SLOT</div>
+          2–5 PM · Deep study DAA
+        </div>
+      </div>
+      <div class="fi-day">
+        <div class="fi-day-name">THU ★</div>
+        <div class="fi-free-slot exam-prep">
+          <div class="fi-free-slot-label">⚠ EXAM PREP</div>
+          12–2 PM · CN Lab final prep
+        </div>
+      </div>
+      <div class="fi-day">
+        <div class="fi-day-name">FRI</div>
+        <div class="fi-free-slot exam-prep">
+          <div class="fi-free-slot-label">⚠ EXAM DAY</div>
+          CN Lab · 10 AM · Lab 3
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- CLASS DETAIL POPUP -->
+<div class="popup-overlay" id="popupOverlay" onclick="if(event.target===this)closePopup()">
+  <div class="popup-box">
+    <div class="popup-header">
+      <div style="font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray)">CLASS DETAILS</div>
+      <button class="popup-close" onclick="closePopup()">×</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-subject" id="popSubject"></div>
+      <div class="popup-rows" id="popRows"></div>
+      <div class="popup-ai">
+        <div class="popup-ai-label">✦ AI NOTE</div>
+        <div class="popup-ai-text" id="popAI"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+function openPopup(subject, room, faculty, time, freq, note){
+  document.getElementById('popSubject').textContent = subject;
+  document.getElementById('popRows').innerHTML = `
+    <div class="popup-row"><span class="popup-key">Room</span><span class="popup-val">${room}</span></div>
+    <div class="popup-row"><span class="popup-key">Faculty</span><span class="popup-val">${faculty}</span></div>
+    <div class="popup-row"><span class="popup-key">Slot</span><span class="popup-val">${time}</span></div>
+    <div class="popup-row"><span class="popup-key">Frequency</span><span class="popup-val">${freq}</span></div>
+  `;
+  document.getElementById('popAI').textContent = note;
+  document.getElementById('popupOverlay').classList.add('open');
+}
+
+function closePopup(){
+  document.getElementById('popupOverlay').classList.remove('open');
+}
+
+function setDay(el){
+  document.querySelectorAll('.wn-day').forEach(d=>d.classList.remove('today'));
+  el.classList.add('today');
+  showToast('📅 Showing schedule for ' + el.textContent.split('\n')[0]);
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>

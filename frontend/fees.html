@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fees — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --warn:#f59e0b;--font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+.main{padding:32px 28px 80px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.ph-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.ph-right{display:flex;gap:10px}
+.btn-pay{font-size:.78rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:13px 24px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-pay:hover{background:var(--lime-dark)}
+.btn-receipt{font-size:.78rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:transparent;color:var(--white);border:2px solid rgba(255,255,255,.3);padding:13px 24px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-receipt:hover{border-color:var(--white)}
+
+/* DEADLINE BANNER */
+.deadline-banner{background:var(--red);border:2px solid var(--black);padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden}
+.deadline-banner::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 20px,rgba(255,255,255,.03) 20px,rgba(255,255,255,.03) 21px)}
+.db-left{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+.db-countdown{background:var(--black);padding:12px 18px;text-align:center;flex-shrink:0}
+.db-days{font-size:2rem;font-weight:900;color:var(--lime);line-height:1}
+.db-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.db-text{font-size:1rem;font-weight:900;color:var(--white)}
+.db-sub{font-size:.75rem;font-weight:700;color:rgba(255,255,255,.65);margin-top:3px}
+.db-right{position:relative;z-index:1}
+.btn-pay-now{font-size:.78rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:12px 24px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-pay-now:hover{background:var(--lime-dark)}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--black);background:var(--white);margin-bottom:24px}
+.stat-block{padding:22px 20px;border-right:2px solid var(--black);position:relative}
+.stat-block:last-child{border-right:none}
+.stat-lbl{font-size:.52rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:5px}
+.stat-val{font-size:2rem;font-weight:900;line-height:1}
+.stat-sub{font-size:.68rem;font-weight:700;color:var(--gray);margin-top:4px}
+.stat-accent{position:absolute;bottom:0;left:0;right:0;height:3px}
+
+/* CONTENT GRID */
+.content-grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
+
+/* CARD */
+.card{background:var(--white);border:2px solid var(--black);margin-bottom:20px}
+.card-header{background:var(--black);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.card-action{font-size:.6rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime);cursor:pointer}
+.card-action:hover{color:var(--white)}
+.card-body{padding:0}
+
+/* FEE TABLE */
+.fee-table{width:100%;border-collapse:collapse}
+.fee-table th{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);padding:12px 20px;text-align:left;border-bottom:2px solid var(--black);background:var(--off-white)}
+.fee-table td{padding:14px 20px;border-bottom:1px solid var(--light-gray);font-size:.85rem;font-weight:700}
+.fee-table tr:last-child td{border-bottom:none}
+.fee-table tr:hover td{background:var(--off-white)}
+.fee-name{font-weight:900;color:var(--black)}
+.fee-desc{font-size:.68rem;font-weight:700;color:var(--gray);margin-top:2px}
+.amount-due{color:var(--red);font-weight:900;font-size:.95rem}
+.amount-paid{color:var(--success);font-weight:900;font-size:.95rem}
+.status-badge{font-size:.52rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border:1.5px solid;display:inline-block}
+.sb-due{background:#fff1f1;color:var(--red);border-color:#fca5a5}
+.sb-paid{background:#f0fff4;color:#15803d;border-color:#86efac}
+.sb-partial{background:#fffbeb;color:#92400e;border-color:#fde047}
+.pay-btn{font-size:.6rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--black);color:var(--white);border:2px solid var(--black);padding:7px 14px;cursor:pointer;font-family:var(--font);transition:all .2s;white-space:nowrap}
+.pay-btn:hover{background:var(--red);border-color:var(--red)}
+.pay-btn:disabled{opacity:.4;cursor:not-allowed;background:var(--gray);border-color:var(--gray)}
+
+/* FEE TOTAL BAR */
+.fee-total-bar{background:var(--black);padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+.ftb-label{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.ftb-amount{font-size:1.6rem;font-weight:900;color:var(--lime)}
+.ftb-btn{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:12px 22px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.ftb-btn:hover{background:var(--lime-dark)}
+
+/* PAYMENT HISTORY */
+.hist-row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--light-gray)}
+.hist-row:last-child{border-bottom:none}
+.hist-icon{width:36px;height:36px;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.hist-info{flex:1}
+.hist-name{font-size:.85rem;font-weight:900;color:var(--black)}
+.hist-date{font-size:.65rem;font-weight:700;color:var(--gray);margin-top:2px}
+.hist-amount{font-size:1rem;font-weight:900;color:var(--success)}
+.hist-method{font-size:.55rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border:1.5px solid #86efac;color:#15803d;background:#f0fff4;margin-top:4px;display:inline-block}
+
+/* AI REMINDER */
+.ai-reminder{background:var(--white);border:2px solid var(--lime);margin-bottom:20px}
+.ar-header{background:var(--lime);padding:12px 18px;display:flex;align-items:center;gap:8px}
+.ar-label{font-size:.58rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--black)}
+.ar-pulse{width:7px;height:7px;background:var(--black);border-radius:50%;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ar-body{padding:16px 18px;font-size:.85rem;font-weight:700;color:var(--dark-gray);line-height:1.65}
+.ar-body strong{color:var(--black)}
+
+/* PAYMENT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border:3px solid var(--black);width:100%;max-width:480px;animation:fadeUp .25s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{background:var(--black);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0}
+.modal-h-title{font-size:.95rem;font-weight:900;color:var(--white)}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:1.4rem;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--white)}
+.modal-body{padding:24px}
+.modal-amount{background:var(--lime);padding:20px;text-align:center;margin-bottom:24px}
+.ma-label{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,.5)}
+.ma-val{font-size:3rem;font-weight:900;color:var(--black);line-height:1}
+.ma-note{font-size:.72rem;font-weight:700;color:rgba(0,0,0,.5);margin-top:4px}
+.payment-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.pm-btn{border:2px solid var(--black);padding:14px 12px;cursor:pointer;text-align:center;font-family:var(--font);font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--white);transition:all .2s}
+.pm-btn:hover,.pm-btn.selected{background:var(--black);color:var(--white)}
+.pm-icon{font-size:1.3rem;display:block;margin-bottom:5px}
+.modal-footer{padding:0 24px 24px;display:flex;gap:10px}
+.btn-confirm{flex:1;font-size:.8rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:14px;cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-confirm:hover{background:var(--lime-dark)}
+.btn-cancel{font-size:.8rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--white);color:var(--black);border:2px solid var(--black);padding:14px 20px;cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-cancel:hover{background:var(--off-white)}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);font-size:.82rem;font-weight:900;padding:14px 28px;border:2px solid rgba(255,255,255,.15);z-index:999;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .content-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .stat-block:nth-child(2){border-right:none}
+  .stat-block:nth-child(3){border-top:2px solid var(--black)}
+  .payment-methods{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div><div class="tb-name">Anoop K.</div><div class="tb-role">4SF23CS021 · CSE IV</div></div>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="examtracker.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="timetable.html" class="nav-item"><span class="icon">📚</span> Timetable</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item"><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+    <a href="faculty.html" class="nav-item"><span class="icon">👨‍🏫</span> Faculty Directory</a>
+    <a href="campusmap.html" class="nav-item"><span class="icon">📍</span> Campus Map</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="fees.html" class="nav-item active"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div><div class="su-name">Anoop K.</div><div class="su-roll">4SF23CS021</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">💳 FEE MANAGEMENT</div>
+        <div class="ph-title">Fee Portal</div>
+        <div class="ph-sub">View dues, payment history, download receipts — all in one place.</div>
+      </div>
+      <div class="ph-right">
+        <button class="btn-pay" onclick="openPayModal('all')">Pay All Dues →</button>
+        <button class="btn-receipt" onclick="showToast('📄 Downloading receipts...')">Download Receipts</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEADLINE BANNER -->
+  <div class="deadline-banner">
+    <div class="db-left">
+      <div class="db-countdown">
+        <div class="db-days">9</div>
+        <div class="db-label">DAYS LEFT</div>
+      </div>
+      <div>
+        <div class="db-text">⚠ Fee Payment Deadline — June 20, 2026</div>
+        <div class="db-sub">Late fee of ₹500/week applies after deadline. Pay before it's too late.</div>
+      </div>
+    </div>
+    <div class="db-right">
+      <button class="btn-pay-now" onclick="openPayModal('all')">Pay ₹4,200 Now →</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-block">
+      <div class="stat-lbl">Total Due</div>
+      <div class="stat-val" style="color:var(--red)">₹4,200</div>
+      <div class="stat-sub">Due June 20, 2026</div>
+      <div class="stat-accent" style="background:var(--red)"></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-lbl">Already Paid</div>
+      <div class="stat-val" style="color:var(--success)">₹800</div>
+      <div class="stat-sub">Exam form fee</div>
+      <div class="stat-accent" style="background:var(--success)"></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-lbl">Late Fee Risk</div>
+      <div class="stat-val" style="color:var(--warn)">₹500</div>
+      <div class="stat-sub">Per week after Jun 20</div>
+      <div class="stat-accent" style="background:var(--warn)"></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-lbl">Total Semester</div>
+      <div class="stat-val">₹5,000</div>
+      <div class="stat-sub">All fees combined</div>
+      <div class="stat-accent" style="background:var(--black)"></div>
+    </div>
+  </div>
+
+  <!-- AI REMINDER -->
+  <div class="ai-reminder">
+    <div class="ar-header">
+      <div class="ar-pulse"></div>
+      <span class="ar-label">✦ CampusAI Reminder</span>
+    </div>
+    <div class="ar-body">
+      You have <strong>9 days</strong> left to pay ₹4,200. Missing the deadline means <strong>₹500 extra per week</strong> in late fees — and you won't be able to appear for exams if dues cross July 10. Pay online now in under 2 minutes. <strong>Don't wait.</strong>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- LEFT -->
+    <div>
+      <!-- CURRENT DUES -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Current Dues — IV Semester 2025–26</span>
+          <span class="card-action" onclick="openPayModal('all')">Pay All →</span>
+        </div>
+        <div class="card-body">
+          <table class="fee-table">
+            <thead>
+              <tr>
+                <th>Fee Type</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="fee-name">Tuition Fee</div>
+                  <div class="fee-desc">IV Semester 2025–26</div>
+                </td>
+                <td><span class="amount-due">₹3,200</span></td>
+                <td>June 20, 2026</td>
+                <td><span class="status-badge sb-due">UNPAID</span></td>
+                <td><button class="pay-btn" onclick="openPayModal('tuition')">Pay Now</button></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="fee-name">Library Fee</div>
+                  <div class="fee-desc">Annual library access</div>
+                </td>
+                <td><span class="amount-due">₹1,000</span></td>
+                <td>June 20, 2026</td>
+                <td><span class="status-badge sb-due">UNPAID</span></td>
+                <td><button class="pay-btn" onclick="openPayModal('library')">Pay Now</button></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="fee-name">Exam Form Fee</div>
+                  <div class="fee-desc">VTU June 2026 exam registration</div>
+                </td>
+                <td><span class="amount-paid">₹800</span></td>
+                <td>May 10, 2026</td>
+                <td><span class="status-badge sb-paid">PAID ✓</span></td>
+                <td><button class="pay-btn" disabled>Paid</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="fee-total-bar">
+            <div>
+              <div class="ftb-label">Total Pending</div>
+              <div class="ftb-amount">₹4,200</div>
+            </div>
+            <button class="ftb-btn" onclick="openPayModal('all')">
+              Pay All ₹4,200
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENT HISTORY -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Payment History</span>
+          <span class="card-action" onclick="showToast('📄 Downloading all receipts...')">Download All</span>
+        </div>
+        <div class="card-body">
+          <div class="hist-row">
+            <div class="hist-icon">✅</div>
+            <div class="hist-info">
+              <div class="hist-name">Exam Form Fee — IV Semester</div>
+              <div class="hist-date">May 10, 2026 · Txn ID: TXN20260510001</div>
+              <span class="hist-method">ONLINE · UPI</span>
+            </div>
+            <div style="text-align:right">
+              <div class="hist-amount">₹800</div>
+              <button style="font-size:.55rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:none;border:1.5px solid var(--border);padding:3px 9px;cursor:pointer;font-family:var(--font);margin-top:4px" onclick="showToast('📄 Receipt downloaded!')">Receipt</button>
+            </div>
+          </div>
+          <div class="hist-row">
+            <div class="hist-icon">✅</div>
+            <div class="hist-info">
+              <div class="hist-name">III Semester — Full Fee</div>
+              <div class="hist-date">Dec 5, 2025 · Txn ID: TXN20251205044</div>
+              <span class="hist-method">ONLINE · NET BANKING</span>
+            </div>
+            <div style="text-align:right">
+              <div class="hist-amount">₹5,000</div>
+              <button style="font-size:.55rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:none;border:1.5px solid var(--border);padding:3px 9px;cursor:pointer;font-family:var(--font);margin-top:4px" onclick="showToast('📄 Receipt downloaded!')">Receipt</button>
+            </div>
+          </div>
+          <div class="hist-row">
+            <div class="hist-icon">✅</div>
+            <div class="hist-info">
+              <div class="hist-name">II Semester — Full Fee</div>
+              <div class="hist-date">Jun 12, 2025 · Txn ID: TXN20250612021</div>
+              <span class="hist-method">OFFLINE · CASH</span>
+            </div>
+            <div style="text-align:right">
+              <div class="hist-amount">₹5,000</div>
+              <button style="font-size:.55rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:none;border:1.5px solid var(--border);padding:3px 9px;cursor:pointer;font-family:var(--font);margin-top:4px" onclick="showToast('📄 Receipt downloaded!')">Receipt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+
+      <!-- FEE BREAKDOWN VISUAL -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><span class="card-title">Fee Breakdown</span></div>
+        <div class="card-body" style="padding:20px">
+          <div style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:.8rem;font-weight:900">Tuition Fee</span>
+              <span style="font-size:.8rem;font-weight:900;color:var(--red)">₹3,200</span>
+            </div>
+            <div style="background:var(--light-gray);height:10px;border:1.5px solid var(--black)">
+              <div style="height:100%;width:76%;background:var(--red)"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:.8rem;font-weight:900">Library Fee</span>
+              <span style="font-size:.8rem;font-weight:900;color:var(--red)">₹1,000</span>
+            </div>
+            <div style="background:var(--light-gray);height:10px;border:1.5px solid var(--black)">
+              <div style="height:100%;width:24%;background:var(--warn)"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:4px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:.8rem;font-weight:900">Exam Form ✓</span>
+              <span style="font-size:.8rem;font-weight:900;color:var(--success)">₹800 PAID</span>
+            </div>
+            <div style="background:var(--light-gray);height:10px;border:1.5px solid var(--black)">
+              <div style="height:100%;width:100%;background:var(--success)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENT MODES -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><span class="card-title">How to Pay</span></div>
+        <div class="card-body" style="padding:20px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="border:2px solid var(--black);padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--off-white)'" onmouseout="this.style.background=''" onclick="openPayModal('all')">
+              <span style="font-size:1.3rem">📱</span>
+              <div>
+                <div style="font-size:.85rem;font-weight:900">Online — UPI / Net Banking</div>
+                <div style="font-size:.68rem;font-weight:700;color:var(--gray)">Instant · 24/7 · Recommended</div>
+              </div>
+              <span style="margin-left:auto;font-size:.6rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);padding:3px 9px">FAST</span>
+            </div>
+            <div style="border:2px solid var(--border);padding:14px;display:flex;align-items:center;gap:12px">
+              <span style="font-size:1.3rem">🏦</span>
+              <div>
+                <div style="font-size:.85rem;font-weight:900">Offline — Accounts Office</div>
+                <div style="font-size:.68rem;font-weight:700;color:var(--gray)">GF, Admin Block · Mon–Fri 10am–3pm</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Need Help?</span></div>
+        <div class="card-body" style="padding:18px">
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem;font-weight:700;color:var(--dark-gray)">
+            <div style="display:flex;align-items:center;gap:8px">📞 Accounts Office: Ext 2201</div>
+            <div style="display:flex;align-items:center;gap:8px">📧 accounts@sahyadri.edu.in</div>
+            <div style="display:flex;align-items:center;gap:8px">📍 Ground Floor, Admin Block</div>
+            <div style="display:flex;align-items:center;gap:8px">🕐 Mon–Fri · 10AM–3PM</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-h-title" id="modalTitle">Pay Fee</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-amount">
+        <div class="ma-label">Amount to Pay</div>
+        <div class="ma-val" id="modalAmount">₹4,200</div>
+        <div class="ma-note" id="modalNote">Tuition Fee + Library Fee · Due June 20, 2026</div>
+      </div>
+      <div style="font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Select Payment Method</div>
+      <div class="payment-methods">
+        <button class="pm-btn selected" id="pm-upi" onclick="selectPM(this,'upi')">
+          <span class="pm-icon">📱</span>UPI
+        </button>
+        <button class="pm-btn" id="pm-netbank" onclick="selectPM(this,'netbank')">
+          <span class="pm-icon">🏦</span>Net Banking
+        </button>
+        <button class="pm-btn" id="pm-card" onclick="selectPM(this,'card')">
+          <span class="pm-icon">💳</span>Debit/Credit Card
+        </button>
+        <button class="pm-btn" id="pm-wallet" onclick="selectPM(this,'wallet')">
+          <span class="pm-icon">👛</span>Wallet
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-confirm" onclick="confirmPayment()">Confirm & Pay →</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FEE_DATA = {
+  all:     { title:'Pay All Dues', amount:'₹4,200', note:'Tuition Fee + Library Fee · Due June 20, 2026' },
+  tuition: { title:'Pay Tuition Fee', amount:'₹3,200', note:'IV Semester 2025–26 · Due June 20, 2026' },
+  library: { title:'Pay Library Fee', amount:'₹1,000', note:'Annual library access · Due June 20, 2026' },
+};
+
+let selectedPM = 'upi';
+
+function openPayModal(type) {
+  const data = FEE_DATA[type] || FEE_DATA.all;
+  document.getElementById('modalTitle').textContent = data.title;
+  document.getElementById('modalAmount').textContent = data.amount;
+  document.getElementById('modalNote').textContent = data.note;
+  document.getElementById('payModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('payModal').classList.remove('open');
+}
+
+function selectPM(btn, pm) {
+  document.querySelectorAll('.pm-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedPM = pm;
+}
+
+function confirmPayment() {
+  closeModal();
+  showToast('✅ Payment successful! Receipt sent to your email.');
+  setTimeout(() => showToast('📧 Receipt: TXN' + Date.now().toString().slice(-8) + ' saved!'), 2000);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Tracker — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --warn:#f59e0b;--font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+/* TOP BAR */
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+/* SIDEBAR */
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+/* MAIN */
+.main{padding:32px 28px 80px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.ph-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.ph-right{display:flex;gap:0}
+.ph-stat{padding:14px 22px;border-left:2px solid rgba(255,255,255,.1);text-align:center}
+.ph-stat-val{font-size:1.8rem;font-weight:900;color:var(--white);line-height:1}
+.ph-stat-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:3px}
+
+/* URGENT EXAM BANNER */
+.urgent-banner{background:var(--red);border:2px solid var(--black);padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden}
+.urgent-banner::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 20px,rgba(255,255,255,.03) 20px,rgba(255,255,255,.03) 21px)}
+.ub-left{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+.ub-countdown{background:var(--black);padding:14px 18px;text-align:center;flex-shrink:0}
+.ub-days{font-size:2.2rem;font-weight:900;color:var(--lime);line-height:1}
+.ub-days-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.ub-info{}
+.ub-title{font-size:1.1rem;font-weight:900;color:var(--white)}
+.ub-meta{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.6);margin-top:4px}
+.ub-right{position:relative;z-index:1}
+.btn-prep{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:12px 22px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-prep:hover{background:var(--lime-dark);border-color:var(--lime-dark)}
+
+/* EXAM TIMELINE */
+.timeline{position:relative;margin-bottom:32px}
+.tl-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.tl-title{font-size:.6rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--gray)}
+.tl-toggle{display:flex;border:2px solid var(--black);background:var(--white)}
+.tl-tog-btn{padding:7px 16px;font-size:.65rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-right:2px solid var(--black);background:var(--white);color:var(--gray);transition:all .15s;font-family:var(--font);border-top:none;border-bottom:none;border-left:none}
+.tl-tog-btn:last-child{border-right:none}
+.tl-tog-btn.active{background:var(--black);color:var(--lime)}
+.tl-track{display:flex;flex-direction:column;gap:0;border:2px solid var(--black);background:var(--white)}
+
+/* EXAM ROW */
+.exam-row{display:grid;grid-template-columns:120px 1fr auto;gap:0;border-bottom:2px solid var(--black);align-items:stretch;transition:background .2s;cursor:pointer}
+.exam-row:last-child{border-bottom:none}
+.exam-row:hover{background:var(--off-white)}
+.exam-row.is-urgent{background:#fff8f8}
+.exam-row.is-urgent:hover{background:#fff0f0}
+.exam-date-col{background:var(--black);padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px solid var(--black);flex-shrink:0}
+.exam-row.is-urgent .exam-date-col{background:var(--red)}
+.ed-day{font-size:2rem;font-weight:900;color:var(--white);line-height:1}
+.ed-month{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:2px}
+.ed-countdown{font-size:.58rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--lime);background:rgba(200,240,0,.1);padding:2px 7px;margin-top:6px;text-align:center}
+.exam-info-col{padding:18px 20px}
+.ei-subject{font-size:1.05rem;font-weight:900;color:var(--black);margin-bottom:4px}
+.ei-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.ei-chip{font-size:.6rem;font-weight:800;border:1.5px solid var(--border);padding:3px 9px;color:var(--dark-gray);display:flex;align-items:center;gap:4px}
+.ei-chip.urgent-chip{border-color:var(--red);color:var(--red);background:#fff1f1}
+/* AI PREP INSIGHT */
+.ai-prep{border-left:3px solid var(--lime);background:var(--off-white);padding:9px 12px}
+.ai-prep-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.ai-prep-label .dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ai-prep-text{font-size:.78rem;font-weight:700;color:var(--dark-gray);line-height:1.55}
+.ai-prep-text strong{color:var(--black)}
+.exam-action-col{padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-left:2px solid var(--black);flex-shrink:0;min-width:110px}
+.action-btn{font-size:.58rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border:2px solid;cursor:pointer;font-family:var(--font);width:100%;text-align:center;transition:all .15s}
+.ab-black{background:var(--black);color:var(--white);border-color:var(--black)}
+.ab-black:hover{background:var(--red);border-color:var(--red)}
+.ab-outline{background:var(--white);color:var(--black);border-color:var(--black)}
+.ab-outline:hover{background:var(--off-white)}
+.ab-lime{background:var(--lime);color:var(--black);border-color:var(--lime)}
+.ab-lime:hover{background:var(--lime-dark)}
+.exam-done-badge{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;background:var(--success);color:var(--white)}
+
+/* SUBJECT PREP CARDS */
+.prep-section{margin-top:8px}
+.prep-section-title{font-size:.6rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--gray);margin-bottom:14px}
+.prep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.prep-card{background:var(--white);border:2px solid var(--black);transition:all .2s}
+.prep-card:hover{box-shadow:4px 4px 0 var(--black);transform:translateY(-2px)}
+.pc-header{background:var(--black);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.pc-subject{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.pc-days{font-size:.55rem;font-weight:900;letter-spacing:1px;padding:3px 8px}
+.pc-body{padding:16px}
+.pc-readiness{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.readiness-bar-wrap{flex:1;height:10px;background:var(--light-gray);border:1.5px solid var(--black)}
+.readiness-bar{height:100%;transition:width .6s ease}
+.readiness-pct{font-size:.8rem;font-weight:900;width:36px;text-align:right}
+.pc-topics{margin-bottom:12px}
+.pc-topics-title{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+.topic-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--light-gray);cursor:pointer}
+.topic-row:last-child{border-bottom:none}
+.topic-check{width:16px;height:16px;border:2px solid var(--black);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .15s}
+.topic-check.checked{background:var(--black);color:var(--lime)}
+.topic-name{font-size:.78rem;font-weight:700;color:var(--dark-gray);flex:1}
+.topic-name.done{text-decoration:line-through;color:var(--gray)}
+.topic-weight{font-size:.55rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border:1.5px solid}
+.tw-high{background:#fff1f1;color:var(--red);border-color:#fca5a5}
+.tw-med{background:#fffbeb;color:#92400e;border-color:#fde047}
+.tw-low{background:#f0fff4;color:#15803d;border-color:#86efac}
+.pc-ai-tip{border-top:2px solid var(--black);padding:12px;background:var(--off-white);border-left:3px solid var(--lime)}
+.pc-ai-tip-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:4px}
+.pc-ai-tip-text{font-size:.75rem;font-weight:700;color:var(--dark-gray);line-height:1.55}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);font-size:.82rem;font-weight:900;padding:14px 28px;border:2px solid rgba(255,255,255,.15);z-index:999;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .prep-grid{grid-template-columns:1fr}
+  .exam-row{grid-template-columns:80px 1fr}
+  .exam-action-col{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-right">
+    <div class="tb-user">
+      <div class="tb-avatar">AK</div>
+      <div>
+        <div class="tb-name">Anoop K.</div>
+        <div class="tb-role">4SF23CS021 · CSE IV</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="examtracker.html" class="nav-item active"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="timetable.html" class="nav-item"><span class="icon">📚</span> Timetable</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item"><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div><div class="su-name">Anoop K.</div><div class="su-roll">4SF23CS021</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">✦ AI EXAM PREP ENGINE</div>
+        <div class="ph-title">Exam Tracker</div>
+        <div class="ph-sub">AI-generated prep tips, topic weights, and countdown timers — personalized for your semester.</div>
+      </div>
+      <div class="ph-right">
+        <div class="ph-stat"><div class="ph-stat-val">5</div><div class="ph-stat-label">Exams Left</div></div>
+        <div class="ph-stat"><div class="ph-stat-val" style="color:var(--red)">1</div><div class="ph-stat-label">Tomorrow</div></div>
+        <div class="ph-stat"><div class="ph-stat-val" style="color:var(--lime)">62%</div><div class="ph-stat-label">Avg. Readiness</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- URGENT EXAM BANNER -->
+  <div class="urgent-banner">
+    <div class="ub-left">
+      <div class="ub-countdown">
+        <div class="ub-days" id="urgentDays">1</div>
+        <div class="ub-days-label">DAY LEFT</div>
+      </div>
+      <div class="ub-info">
+        <div class="ub-title">⚠ CN Lab Practical — Tomorrow 10:00 AM</div>
+        <div class="ub-meta">📍 Lab Block 3 · Hall Ticket required · Bring calculator & pen drive</div>
+      </div>
+    </div>
+    <div class="ub-right">
+      <button class="btn-prep" onclick="showToast('🤖','AI generating CN Lab prep plan...')">
+        ✦ Get AI Prep Plan
+      </button>
+    </div>
+  </div>
+
+  <!-- EXAM TIMELINE -->
+  <div class="timeline">
+    <div class="tl-header">
+      <div class="tl-title">Upcoming Exams — June 2026</div>
+      <div class="tl-toggle">
+        <button class="tl-tog-btn active" onclick="setView(this,'list')">List View</button>
+        <button class="tl-tog-btn" onclick="setView(this,'calendar')">Calendar</button>
+      </div>
+    </div>
+
+    <div class="tl-track" id="examList">
+
+      <!-- EXAM 1 — URGENT -->
+      <div class="exam-row is-urgent" onclick="scrollToPrep('cn')">
+        <div class="exam-date-col">
+          <div class="ed-day">14</div>
+          <div class="ed-month">JUN</div>
+          <div class="ed-countdown">TOMORROW</div>
+        </div>
+        <div class="exam-info-col">
+          <div class="ei-subject">Computer Networks — Lab Practical</div>
+          <div class="ei-meta">
+            <span class="ei-chip urgent-chip">⚠ URGENT</span>
+            <span class="ei-chip">🕐 10:00 AM</span>
+            <span class="ei-chip">📍 Lab Block 3</span>
+            <span class="ei-chip">⏱ 3 hrs</span>
+          </div>
+          <div class="ai-prep">
+            <div class="ai-prep-label"><div class="dot"></div>AI PREP TIP</div>
+            <div class="ai-prep-text">Focus on <strong>socket programming</strong> and <strong>Wireshark packet analysis</strong> — asked in 4 of last 5 years. Practice the TCP 3-way handshake lab setup. Have your viva answers ready for OSI model layers.</div>
+          </div>
+        </div>
+        <div class="exam-action-col">
+          <div class="action-btn ab-lime" onclick="event.stopPropagation();showToast('📥','Hall ticket downloaded!')">Hall Ticket</div>
+          <div class="action-btn ab-black" onclick="event.stopPropagation();scrollToPrep('cn')">Prep Plan</div>
+        </div>
+      </div>
+
+      <!-- EXAM 2 -->
+      <div class="exam-row" onclick="scrollToPrep('mes')">
+        <div class="exam-date-col">
+          <div class="ed-day">18</div>
+          <div class="ed-month">JUN</div>
+          <div class="ed-countdown">5 DAYS</div>
+        </div>
+        <div class="exam-info-col">
+          <div class="ei-subject">Microprocessors & Embedded Systems</div>
+          <div class="ei-meta">
+            <span class="ei-chip">🕐 9:00 AM</span>
+            <span class="ei-chip">📍 Hall A</span>
+            <span class="ei-chip">⏱ 3 hrs</span>
+            <span class="ei-chip">📝 Theory</span>
+          </div>
+          <div class="ai-prep">
+            <div class="ai-prep-label"><div class="dot"></div>AI PREP TIP</div>
+            <div class="ai-prep-text">High-weightage topics: <strong>8086 instruction set & addressing modes</strong> (15 marks), <strong>8051 timer/counter programming</strong> (10 marks), and <strong>LPC2148 GPIO interfacing</strong>. Revise interrupt handling — guaranteed question.</div>
+          </div>
+        </div>
+        <div class="exam-action-col">
+          <div class="action-btn ab-outline" onclick="event.stopPropagation();showToast('📥','Hall ticket downloaded!')">Hall Ticket</div>
+          <div class="action-btn ab-black" onclick="event.stopPropagation();scrollToPrep('mes')">Prep Plan</div>
+        </div>
+      </div>
+
+      <!-- EXAM 3 -->
+      <div class="exam-row" onclick="scrollToPrep('daa')">
+        <div class="exam-date-col">
+          <div class="ed-day">21</div>
+          <div class="ed-month">JUN</div>
+          <div class="ed-countdown">8 DAYS</div>
+        </div>
+        <div class="exam-info-col">
+          <div class="ei-subject">Design & Analysis of Algorithms</div>
+          <div class="ei-meta">
+            <span class="ei-chip">🕐 9:00 AM</span>
+            <span class="ei-chip">📍 Hall B</span>
+            <span class="ei-chip">⏱ 3 hrs</span>
+            <span class="ei-chip">📝 Theory</span>
+          </div>
+          <div class="ai-prep">
+            <div class="ai-prep-label"><div class="dot"></div>AI PREP TIP</div>
+            <div class="ai-prep-text"><strong>NP-completeness & reductions</strong> appear every year. Master <strong>Dijkstra, Bellman-Ford, and Floyd-Warshall</strong> with time complexity proofs. Backtracking (N-queens, graph coloring) — 10 mark question guaranteed.</div>
+          </div>
+        </div>
+        <div class="exam-action-col">
+          <div class="action-btn ab-outline" onclick="event.stopPropagation();showToast('📥','Hall ticket downloaded!')">Hall Ticket</div>
+          <div class="action-btn ab-black" onclick="event.stopPropagation();scrollToPrep('daa')">Prep Plan</div>
+        </div>
+      </div>
+
+      <!-- EXAM 4 -->
+      <div class="exam-row" onclick="scrollToPrep('dbms')">
+        <div class="exam-date-col">
+          <div class="ed-day">24</div>
+          <div class="ed-month">JUN</div>
+          <div class="ed-countdown">11 DAYS</div>
+        </div>
+        <div class="exam-info-col">
+          <div class="ei-subject">Database Management Systems</div>
+          <div class="ei-meta">
+            <span class="ei-chip">🕐 9:00 AM</span>
+            <span class="ei-chip">📍 Hall A</span>
+            <span class="ei-chip">⏱ 3 hrs</span>
+            <span class="ei-chip">📝 Theory</span>
+          </div>
+          <div class="ai-prep">
+            <div class="ai-prep-label"><div class="dot"></div>AI PREP TIP</div>
+            <div class="ai-prep-text">Focus on <strong>SQL joins and nested queries</strong> — always practical questions. <strong>Normalization (1NF–BCNF)</strong> with examples is 15 marks. Transaction management and ACID properties — short notes guaranteed.</div>
+          </div>
+        </div>
+        <div class="exam-action-col">
+          <div class="action-btn ab-outline" onclick="event.stopPropagation();showToast('📥','Hall ticket downloaded!')">Hall Ticket</div>
+          <div class="action-btn ab-black" onclick="event.stopPropagation();scrollToPrep('dbms')">Prep Plan</div>
+        </div>
+      </div>
+
+      <!-- EXAM 5 — DONE -->
+      <div class="exam-row" style="opacity:.5">
+        <div class="exam-date-col" style="background:#444">
+          <div class="ed-day">10</div>
+          <div class="ed-month">JUN</div>
+          <div class="ed-countdown" style="color:rgba(255,255,255,.3)">DONE</div>
+        </div>
+        <div class="exam-info-col">
+          <div class="ei-subject">Software Engineering — Internal Test</div>
+          <div class="ei-meta">
+            <span class="ei-chip">🕐 10:00 AM</span>
+            <span class="ei-chip">📍 Room 301</span>
+          </div>
+        </div>
+        <div class="exam-action-col">
+          <div class="exam-done-badge">✓ DONE</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PREP CARDS -->
+  <div class="prep-section" id="prepSection">
+    <div class="prep-section-title">AI-Generated Prep Plans — Check off topics as you study</div>
+    <div class="prep-grid">
+
+      <!-- CN -->
+      <div class="prep-card" id="prep-cn">
+        <div class="pc-header">
+          <span class="pc-subject">Computer Networks</span>
+          <span class="pc-days" style="background:var(--red);color:var(--white)">TOMORROW</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-readiness">
+            <div class="readiness-bar-wrap"><div class="readiness-bar" id="cn-bar" style="width:45%;background:var(--warn)"></div></div>
+            <div class="readiness-pct" id="cn-pct" style="color:var(--warn)">45%</div>
+          </div>
+          <div class="pc-topics">
+            <div class="pc-topics-title">Key Topics — tap to mark done</div>
+            <div class="topic-row" onclick="toggleTopic(this,'cn')">
+              <div class="topic-check checked">✓</div>
+              <span class="topic-name done">OSI Model — all 7 layers</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'cn')">
+              <div class="topic-check checked">✓</div>
+              <span class="topic-name done">TCP/IP 3-way handshake</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'cn')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Socket programming (lab)</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'cn')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Wireshark packet analysis</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'cn')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Subnetting & CIDR</span>
+              <span class="topic-weight tw-med">MED</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'cn')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Routing protocols (RIP, OSPF)</span>
+              <span class="topic-weight tw-low">LOW</span>
+            </div>
+          </div>
+        </div>
+        <div class="pc-ai-tip">
+          <div class="pc-ai-tip-label">✦ AI TIP</div>
+          <div class="pc-ai-tip-text">Lab exam — examiner will ask you to <strong>run a TCP socket program</strong> and explain output. Prepare viva answers for: "What is a port?", "Difference between TCP and UDP?"</div>
+        </div>
+      </div>
+
+      <!-- MES -->
+      <div class="prep-card" id="prep-mes">
+        <div class="pc-header">
+          <span class="pc-subject">MES — 8086 / 8051 / LPC2148</span>
+          <span class="pc-days" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)">5 DAYS</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-readiness">
+            <div class="readiness-bar-wrap"><div class="readiness-bar" id="mes-bar" style="width:70%;background:var(--lime-dark)"></div></div>
+            <div class="readiness-pct" id="mes-pct" style="color:var(--lime-dark)">70%</div>
+          </div>
+          <div class="pc-topics">
+            <div class="pc-topics-title">Key Topics</div>
+            <div class="topic-row" onclick="toggleTopic(this,'mes')">
+              <div class="topic-check checked">✓</div>
+              <span class="topic-name done">8086 addressing modes</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'mes')">
+              <div class="topic-check checked">✓</div>
+              <span class="topic-name done">8051 timer/counter programming</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'mes')">
+              <div class="topic-check checked">✓</div>
+              <span class="topic-name done">LPC2148 GPIO interfacing</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'mes')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Interrupt handling (8051)</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'mes')">
+              <div class="topic-check"></div>
+              <span class="topic-name">ARM7 architecture overview</span>
+              <span class="topic-weight tw-med">MED</span>
+            </div>
+          </div>
+        </div>
+        <div class="pc-ai-tip">
+          <div class="pc-ai-tip-label">✦ AI TIP</div>
+          <div class="pc-ai-tip-text">Draw the <strong>8086 architecture diagram</strong> from memory — it's a mandatory 10-mark question. Also memorize the <strong>8051 register bank structure</strong>.</div>
+        </div>
+      </div>
+
+      <!-- DAA -->
+      <div class="prep-card" id="prep-daa">
+        <div class="pc-header">
+          <span class="pc-subject">Design & Analysis of Algo.</span>
+          <span class="pc-days" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)">8 DAYS</span>
+        </div>
+        <div class="pc-body">
+          <div class="pc-readiness">
+            <div class="readiness-bar-wrap"><div class="readiness-bar" id="daa-bar" style="width:40%;background:var(--red)"></div></div>
+            <div class="readiness-pct" id="daa-pct" style="color:var(--red)">40%</div>
+          </div>
+          <div class="pc-topics">
+            <div class="pc-topics-title">Key Topics</div>
+            <div class="topic-row" onclick="toggleTopic(this,'daa')">
+              <div class="topic-check checked">✓</div>
+              <span class="topic-name done">Asymptotic notations (Big-O)</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'daa')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Dijkstra & Bellman-Ford</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'daa')">
+              <div class="topic-check"></div>
+              <span class="topic-name">NP-completeness & reductions</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'daa')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Backtracking — N-Queens</span>
+              <span class="topic-weight tw-high">HIGH</span>
+            </div>
+            <div class="topic-row" onclick="toggleTopic(this,'daa')">
+              <div class="topic-check"></div>
+              <span class="topic-name">Dynamic programming (LCS, 0/1 Knapsack)</span>
+              <span class="topic-weight tw-med">MED</span>
+            </div>
+          </div>
+        </div>
+        <div class="pc-ai-tip">
+          <div class="pc-ai-tip-label">✦ AI TIP</div>
+          <div class="pc-ai-tip-text">You have 8 days — DAA needs at least <strong>4 days of focused study</strong>. Start with graph algorithms tomorrow. NP chapter alone can fetch you 20+ marks.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+const topicCounts = { cn:{total:6,done:2}, mes:{total:5,done:3}, daa:{total:5,done:1} };
+
+function toggleTopic(row, subject){
+  const check = row.querySelector('.topic-check');
+  const name = row.querySelector('.topic-name');
+  const isDone = check.classList.contains('checked');
+  if(isDone){
+    check.classList.remove('checked'); check.textContent='';
+    name.classList.remove('done');
+    topicCounts[subject].done--;
+  } else {
+    check.classList.add('checked'); check.textContent='✓';
+    name.classList.add('done');
+    topicCounts[subject].done++;
+  }
+  updateReadiness(subject);
+}
+
+function updateReadiness(subject){
+  const {total,done} = topicCounts[subject];
+  const pct = Math.round((done/total)*100);
+  const bar = document.getElementById(subject+'-bar');
+  const pctEl = document.getElementById(subject+'-pct');
+  bar.style.width = pct+'%';
+  const color = pct<50?'var(--red)':pct<75?'var(--warn)':'var(--success)';
+  bar.style.background = color;
+  pctEl.style.color = color;
+  pctEl.textContent = pct+'%';
+  showToast(pct===100?'🎉':'📝', pct===100?`${subject.toUpperCase()} fully covered!`:`${subject.toUpperCase()} readiness: ${pct}%`);
+}
+
+function scrollToPrep(subject){
+  const el = document.getElementById('prep-'+subject);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.boxShadow='0 0 0 3px var(--lime)'; setTimeout(()=>el.style.boxShadow='',1500); }
+}
+
+function setView(btn, view){
+  document.querySelectorAll('.tl-tog-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(view==='calendar') showToast('📅','Calendar view — coming in final round!');
+}
+
+function showToast(icon, msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = icon+' '+msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>

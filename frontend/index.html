@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusAI — Your College's Own AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<!-- <style>
+:root {
+  --red:#e5473b; --red-dark:#c93a30; --coral:#e8624e;
+  --black:#111111; --white:#ffffff; --off-white:#f9f9f7;
+  --light-gray:#f2f2f0; --gray:#888888; --dark-gray:#444444;
+  --border:#e0e0e0; --lime:#c8f000; --lime-dark:#a0c000;
+  --success:#22c55e; --blue:#2563eb;
+  --font:'Nunito',sans-serif; --max-w:1100px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--white);color:var(--black);font-family:var(--font);font-size:16px;line-height:1.5;overflow-x:hidden}
+ul{list-style:none} a{color:inherit;text-decoration:none}
+
+/* ── NAV ── */
+.gs-nav{background:var(--white);border-bottom:2px solid var(--black);position:sticky;top:0;z-index:300}
+.nav-wrap{max-width:1200px;margin:0 auto;padding:0 28px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.logo-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid var(--black);padding:6px 12px;line-height:1;cursor:pointer;text-decoration:none}
+.logo-l1{font-size:.85rem;font-weight:900;letter-spacing:3px;color:var(--black);display:block}
+.logo-l2{font-size:.6rem;font-weight:900;letter-spacing:4px;color:var(--gray);display:block;margin-top:2px}
+.nav-links{display:flex;align-items:center;gap:28px;flex:1;justify-content:center}
+.nav-links a{font-size:.9rem;font-weight:700;color:var(--dark-gray);transition:color .2s}
+.nav-links a:hover{color:var(--black)}
+.nav-links a.active{color:var(--black);font-weight:900}
+.nav-ctas{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.btn-black{font-size:.8rem;font-weight:900;letter-spacing:.5px;color:var(--white);background:var(--black);border:2px solid var(--black);border-radius:0;padding:10px 20px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:background .2s;font-family:var(--font);text-decoration:none}
+.btn-black:hover{background:var(--red);border-color:var(--red)}
+.btn-outlined{font-size:.8rem;font-weight:900;color:var(--black);background:var(--white);border:2px solid var(--black);border-radius:0;padding:10px 20px;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:var(--font);text-decoration:none}
+.btn-outlined:hover{background:var(--black);color:var(--white)}
+
+/* ── ANNOUNCE STRIP ── */
+.announce-strip{background:var(--black);padding:11px 28px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.strip-text{font-size:.82rem;font-weight:700;color:var(--white)}
+.strip-badge{background:var(--lime);color:var(--black);font-size:.62rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:3px 10px}
+.strip-badge.red{background:var(--red);color:var(--white)}
+
+/* ── HERO ── */
+.hero{background:var(--red);padding:72px 28px 60px;position:relative;overflow:hidden;border-bottom:3px solid var(--black)}
+.hero::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 28px,rgba(255,255,255,.04) 28px,rgba(255,255,255,.04) 29px);pointer-events:none}
+.hero-inner{max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center;position:relative;z-index:1}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;border:2px solid rgba(255,255,255,.4);padding:5px 14px;font-size:.65rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.85);margin-bottom:22px}
+.hero-tag span{background:var(--lime);color:var(--black);padding:1px 7px;font-size:.6rem}
+.hero-title{font-size:clamp(2.6rem,6vw,5.2rem);font-weight:900;line-height:.98;color:var(--white);letter-spacing:-2px;margin-bottom:20px}
+.hero-title .lime{color:var(--lime)}
+.hero-title .outline{-webkit-text-stroke:2px var(--white);color:transparent}
+.hero-sub{font-size:1rem;font-weight:600;color:rgba(255,255,255,.75);max-width:520px;line-height:1.65;margin-bottom:36px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-lime{font-size:.82rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--black);background:var(--lime);border:2px solid var(--lime);padding:14px 28px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;font-family:var(--font);text-decoration:none}
+.btn-lime:hover{background:var(--lime-dark);border-color:var(--lime-dark)}
+.btn-white-outline{font-size:.82rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--white);background:transparent;border:2px solid rgba(255,255,255,.5);padding:14px 28px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;font-family:var(--font);text-decoration:none}
+.btn-white-outline:hover{border-color:var(--white);background:rgba(255,255,255,.08)}
+.hero-right-num{font-size:10rem;font-weight:900;color:rgba(255,255,255,.07);line-height:1;letter-spacing:-6px;text-align:right;user-select:none}
+.hero-right-num span{display:block;font-size:1rem;letter-spacing:4px;color:rgba(255,255,255,.15);font-size:1.1rem;margin-top:-12px}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:2px solid var(--black)}
+.stat-block{padding:24px 24px;border-right:2px solid var(--black);position:relative}
+.stat-block:last-child{border-right:none}
+.stat-lbl{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+.stat-val{font-size:2.2rem;font-weight:900;line-height:1;color:var(--black)}
+.stat-sub{font-size:.7rem;font-weight:700;color:var(--gray);margin-top:4px}
+.stat-bar{position:absolute;bottom:0;left:0;right:0;height:3px}
+
+/* ── SECTION COMMONS ── */
+.section{padding:80px 28px;max-width:var(--max-w);margin:0 auto}
+.section-eyebrow{font-size:.6rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.section-title{font-size:clamp(2rem,4vw,3.2rem);font-weight:900;line-height:1.05;letter-spacing:-1px;color:var(--black);margin-bottom:16px}
+.section-sub{font-size:1rem;font-weight:600;color:var(--gray);line-height:1.65;max-width:520px;margin-bottom:52px}
+
+/* ── FEATURE GRID ── */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:2px solid var(--black)}
+.feat-card{padding:32px 28px;border-right:2px solid var(--black);border-bottom:2px solid var(--black);position:relative;transition:background .2s}
+.feat-card:hover{background:var(--off-white)}
+.feat-card:nth-child(3n){border-right:none}
+.feat-card:nth-child(4),.feat-card:nth-child(5),.feat-card:nth-child(6){border-bottom:none}
+.feat-num{font-size:.6rem;font-weight:900;letter-spacing:3px;color:var(--border);margin-bottom:16px}
+.feat-icon{font-size:2rem;margin-bottom:14px;display:block}
+.feat-title{font-size:1.05rem;font-weight:900;color:var(--black);margin-bottom:8px}
+.feat-desc{font-size:.85rem;font-weight:600;color:var(--gray);line-height:1.65}
+.feat-tag{display:inline-block;font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;margin-top:12px}
+.tag-red{background:var(--red);color:var(--white)}
+.tag-lime{background:var(--lime);color:var(--black)}
+.tag-black{background:var(--black);color:var(--white)}
+
+/* ── HOW IT WORKS ── */
+.how-section{background:var(--black);padding:80px 28px;border-top:3px solid var(--black);border-bottom:3px solid var(--black)}
+.how-inner{max-width:var(--max-w);margin:0 auto}
+.how-title{font-size:clamp(2rem,4vw,3rem);font-weight:900;line-height:1.05;letter-spacing:-1px;color:var(--white);margin-bottom:8px}
+.how-sub{font-size:1rem;font-weight:600;color:rgba(255,255,255,.4);margin-bottom:60px}
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid rgba(255,255,255,.1)}
+.how-step{padding:32px 24px;border-right:2px solid rgba(255,255,255,.1)}
+.how-step:last-child{border-right:none}
+.step-num{font-size:3.5rem;font-weight:900;color:rgba(255,255,255,.06);line-height:1;margin-bottom:16px;letter-spacing:-2px}
+.step-title{font-size:.95rem;font-weight:900;color:var(--white);margin-bottom:8px}
+.step-desc{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.4);line-height:1.65}
+.step-badge{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;margin-top:14px;display:inline-block}
+
+/* ── MOCKUP PREVIEW SECTION ── */
+.preview-section{padding:80px 28px;background:var(--off-white);border-bottom:2px solid var(--black)}
+.preview-inner{max-width:var(--max-w);margin:0 auto}
+.preview-window{border:2px solid var(--black);background:var(--white);box-shadow:8px 8px 0 var(--black)}
+.preview-bar{background:var(--black);padding:12px 18px;display:flex;align-items:center;gap:10px}
+.p-dot{width:10px;height:10px;border-radius:50%}
+.preview-url{margin-left:12px;background:rgba(255,255,255,.08);padding:5px 14px;font-size:.72rem;color:rgba(255,255,255,.45);font-weight:700;flex:1;max-width:280px}
+.preview-body{display:grid;grid-template-columns:220px 1fr;min-height:360px}
+.p-sidebar{background:var(--black);border-right:2px solid var(--black);padding:0}
+.p-nav-item{padding:14px 18px;font-size:.75rem;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s}
+.p-nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.p-nav-item.active{color:var(--lime);background:rgba(200,240,0,.06)}
+.p-nav-item.active::before{content:'';display:block;width:3px;height:100%;background:var(--lime);position:absolute;left:0}
+.p-nav-item{position:relative}
+.p-content{padding:28px}
+.p-content-title{font-size:1.4rem;font-weight:900;color:var(--black);margin-bottom:4px}
+.p-content-sub{font-size:.78rem;font-weight:600;color:var(--gray);margin-bottom:24px}
+.p-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.p-card{border:2px solid var(--black);padding:16px}
+.p-card-lbl{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+.p-card-val{font-size:1.6rem;font-weight:900;line-height:1}
+.p-card-sub{font-size:.65rem;font-weight:700;color:var(--gray);margin-top:4px}
+.p-chat-preview{border:2px solid var(--black);padding:18px;background:var(--off-white)}
+.p-chat-lbl{font-size:.58rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.p-chat-lbl::before{content:'';width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.p-msg{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.p-avatar{width:28px;height:28px;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;flex-shrink:0}
+.p-avatar.user{background:var(--black);color:var(--lime)}
+.p-avatar.ai{background:var(--red);color:var(--white)}
+.p-bubble{border:2px solid var(--black);padding:9px 13px;font-size:.8rem;font-weight:700;color:var(--black);line-height:1.5;background:var(--white)}
+.p-bubble.ai{background:var(--black);color:var(--white);border-color:var(--black)}
+
+/* ── CTA BAND ── */
+.cta-band{background:var(--lime);border-top:3px solid var(--black);border-bottom:3px solid var(--black);padding:72px 28px}
+.cta-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.cta-title{font-size:clamp(2rem,4vw,3.5rem);font-weight:900;line-height:1.05;letter-spacing:-1.5px;color:var(--black)}
+.cta-title span{-webkit-text-stroke:2px var(--black);color:transparent}
+.cta-right{display:flex;flex-direction:column;gap:12px}
+.cta-btn{font-size:.9rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--white);background:var(--black);border:2px solid var(--black);padding:16px 36px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;font-family:var(--font);text-decoration:none}
+.cta-btn:hover{background:var(--red);border-color:var(--red)}
+.cta-note{font-size:.72rem;font-weight:700;color:rgba(0,0,0,.5);text-align:center}
+
+/* ── FOOTER ── */
+.gs-footer{background:var(--coral);border-top:3px solid var(--black);padding:56px 28px 40px}
+.footer-inner{max-width:var(--max-w);margin:0 auto;display:grid;grid-template-columns:1fr 2fr;gap:60px;align-items:start}
+.footer-heading{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:900;line-height:1.1;color:var(--white)}
+.footer-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px}
+.footer-col h5{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:14px}
+.footer-col p{font-size:.85rem;font-weight:600;color:var(--white);margin-bottom:8px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.2);margin-top:48px;padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-bottom-text{font-size:.75rem;font-weight:700;color:rgba(255,255,255,.5)}
+
+@media(max-width:768px){
+  .nav-links{display:none}
+  .feat-grid{grid-template-columns:1fr}
+  .feat-card{border-right:none!important;border-bottom:2px solid var(--black)!important}
+  .feat-card:last-child{border-bottom:none!important}
+  .how-steps{grid-template-columns:1fr 1fr}
+  .how-step:nth-child(2){border-right:none}
+  .how-step:nth-child(3){border-top:2px solid rgba(255,255,255,.1)}
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .stat-block:nth-child(2){border-right:none}
+  .stat-block:nth-child(3){border-top:2px solid var(--black)}
+  .preview-body{grid-template-columns:1fr}
+  .p-sidebar{display:none}
+  .p-cards{grid-template-columns:1fr 1fr}
+  .footer-inner{grid-template-columns:1fr}
+  .footer-cols{grid-template-columns:1fr 1fr}
+  .cta-inner{flex-direction:column}
+  .hero-right-num{display:none}
+}
+</style> -->
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="gs-nav">
+  <div class="nav-wrap">
+    <a href="index.html" class="logo-box">
+      <span class="logo-l1">CAMPUS</span>
+      <span class="logo-l2">AI PORTAL</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="noticeboard.html">Notice Board</a></li>
+    </ul>
+    <div class="nav-ctas">
+      <a href="login.html" class="btn-outlined">Log In</a>
+      <a href="login.html" class="btn-black">Get Started →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ANNOUNCE STRIP -->
+<div class="announce-strip">
+  <span class="strip-badge">NEW</span>
+  <span class="strip-text">AI-powered notice summarizer is now live — get any circular in 2 lines</span>
+  <span class="strip-badge red">BETA</span>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-tag">
+        <span>POWERED BY AI</span>
+        Smart Campus Portal
+      </div>
+      <h1 class="hero-title">
+        Your campus.<br>
+        <span class="lime">Answered</span><br>
+        <span class="outline">instantly.</span>
+      </h1>
+      <p class="hero-sub">
+        Stop digging through WhatsApp groups and notice boards.
+        Ask CampusAI anything — exams, fees, hostel rules, faculty — and get the answer in seconds.
+      </p>
+      <div class="hero-btns">
+        <a href="login.html" class="btn-lime">
+          Get Started Free
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="dashboard.html" class="btn-white-outline">
+          View Demo Dashboard →
+        </a>
+      </div>
+    </div>
+    <div class="hero-right-num">
+      AI<span>CAMPUS PORTAL</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-block">
+    <div class="stat-lbl">Questions Answered</div>
+    <div class="stat-val">12,400+</div>
+    <div class="stat-sub">by AI this semester</div>
+    <div class="stat-bar" style="background:var(--red)"></div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-lbl">Response Time</div>
+    <div class="stat-val">&lt; 3s</div>
+    <div class="stat-sub">average answer speed</div>
+    <div class="stat-bar" style="background:var(--lime)"></div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-lbl">Students Active</div>
+    <div class="stat-val">2,800+</div>
+    <div class="stat-sub">across all departments</div>
+    <div class="stat-bar" style="background:var(--black)"></div>
+  </div>
+  <div class="stat-block">
+    <div class="stat-lbl">Notices Summarized</div>
+    <div class="stat-val">340+</div>
+    <div class="stat-sub">circulars this year</div>
+    <div class="stat-bar" style="background:var(--coral)"></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div id="features">
+  <div class="section">
+    <div class="section-eyebrow">What We Offer</div>
+    <h2 class="section-title">Everything you need.<br>Zero searching.</h2>
+    <p class="section-sub">No more switching between 5 apps and 3 WhatsApp groups to find basic college information.</p>
+  </div>
+</div>
+<div style="border-top:2px solid var(--black);border-bottom:2px solid var(--black);margin-bottom:80px">
+  <div class="feat-grid" style="max-width:var(--max-w);margin:0 auto;border-left:2px solid var(--black);border-right:2px solid var(--black)">
+    <div class="feat-card">
+      <div class="feat-num">01</div>
+      <span class="feat-icon">🤖</span>
+      <div class="feat-title">AI Campus Assistant</div>
+      <div class="feat-desc">Ask anything in plain English. Trained on your college's complete data — timetables, fees, rules, faculty, hostel — answers in seconds.</div>
+      <span class="feat-tag tag-red">HERO FEATURE</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">02</div>
+      <span class="feat-icon">📋</span>
+      <div class="feat-title">Smart Notice Board</div>
+      <div class="feat-desc">Every circular auto-summarized to 2 lines by AI. Never miss critical announcements buried in pages of formal text again.</div>
+      <span class="feat-tag tag-lime">AI POWERED</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">03</div>
+      <span class="feat-icon">📊</span>
+      <div class="feat-title">Live Dashboard</div>
+      <div class="feat-desc">Attendance %, upcoming exams, pending fees, and today's timetable — all on one screen. Always know where you stand.</div>
+      <span class="feat-tag tag-black">PERSONALIZED</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">04</div>
+      <span class="feat-icon">🗓️</span>
+      <div class="feat-title">Exam Tracker</div>
+      <div class="feat-desc">Countdown timers per subject, hall ticket downloads, and AI-generated prep tips. Never be caught off-guard before an exam.</div>
+      <span class="feat-tag tag-black">SMART ALERTS</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">05</div>
+      <span class="feat-icon">💳</span>
+      <div class="feat-title">Fee Management</div>
+      <div class="feat-desc">View pending dues, payment history, and get smart reminders before deadlines. Never pay a late fee due to missed notifications.</div>
+      <span class="feat-tag tag-lime">DEADLINE ALERTS</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">06</div>
+      <span class="feat-icon">👨‍🏫</span>
+      <div class="feat-title">Faculty Directory</div>
+      <div class="feat-desc">Find any faculty instantly — cabin number, office hours, email, and subjects handled. Searchable and always up to date.</div>
+      <span class="feat-tag tag-red">LIVE DATA</span>
+    </div>
+  </div>
+</div>
+
+<!-- MOCKUP PREVIEW -->
+<section class="preview-section" id="preview">
+  <div class="preview-inner">
+    <div class="section-eyebrow" style="margin-bottom:8px">Live Preview</div>
+    <h2 class="section-title" style="margin-bottom:32px">See it in action.</h2>
+    <div class="preview-window">
+      <div class="preview-bar">
+        <div class="p-dot" style="background:#FF5F56"></div>
+        <div class="p-dot" style="background:#FFBD2E"></div>
+        <div class="p-dot" style="background:#27C93F"></div>
+        <div class="preview-url">campusai.edu.in/dashboard</div>
+      </div>
+      <div class="preview-body">
+        <div class="p-sidebar">
+          <div style="padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)">
+            <div style="font-size:.6rem;font-weight:900;letter-spacing:3px;color:rgba(255,255,255,.3);margin-bottom:4px">LOGGED IN AS</div>
+            <div style="font-size:.88rem;font-weight:900;color:var(--white)">Anoop K.</div>
+            <div style="font-size:.65rem;font-weight:700;color:rgba(255,255,255,.35)">4SF23CS021 · CSE IV</div>
+          </div>
+          <div class="p-nav-item active">🏠 &nbsp;Dashboard</div>
+          <div class="p-nav-item">🤖 &nbsp;Ask AI</div>
+          <div class="p-nav-item">📋 &nbsp;Notices</div>
+          <div class="p-nav-item">📊 &nbsp;Attendance</div>
+          <div class="p-nav-item">💳 &nbsp;Fees</div>
+          <div class="p-nav-item">🗓️ &nbsp;Exams</div>
+          <div class="p-nav-item">👨‍🏫 &nbsp;Faculty</div>
+        </div>
+        <div class="p-content">
+          <div class="p-content-title">Good morning, Anoop 👋</div>
+          <div class="p-content-sub">Thursday, June 13, 2026 · IV Semester, CSE</div>
+          <div class="p-cards">
+            <div class="p-card">
+              <div class="p-card-lbl">Attendance</div>
+              <div class="p-card-val" style="color:var(--success)">87%</div>
+              <div class="p-card-sub">3 classes short</div>
+            </div>
+            <div class="p-card">
+              <div class="p-card-lbl">Pending Fees</div>
+              <div class="p-card-val" style="color:var(--red)">₹4,200</div>
+              <div class="p-card-sub">Due in 6 days</div>
+            </div>
+            <div class="p-card">
+              <div class="p-card-lbl">Next Exam</div>
+              <div class="p-card-val" style="font-size:1.3rem">CN Lab</div>
+              <div class="p-card-sub">Tomorrow 10 AM</div>
+            </div>
+          </div>
+          <div class="p-chat-preview">
+            <div class="p-chat-lbl">CampusAI Assistant — Live</div>
+            <div class="p-msg">
+              <div class="p-avatar user">A</div>
+              <div class="p-bubble">When is the last date to pay semester fees?</div>
+            </div>
+            <div class="p-msg">
+              <div class="p-avatar ai">✦</div>
+              <div class="p-bubble ai">The fee payment deadline is <strong>June 20, 2026</strong>. Pay online via the student portal or at the accounts office (Mon–Fri, 10am–3pm). Late fees apply after the deadline.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="how-inner">
+    <div style="font-size:.6rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px">How It Works</div>
+    <h2 class="how-title">Question to answer<br>in under 3 seconds.</h2>
+    <p class="how-sub">No account setup, no training needed. Just log in and ask.</p>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num">01</div>
+        <div class="step-title">Log in with Roll No</div>
+        <div class="step-desc">Secure login using your college roll number and password. Your data is private and protected.</div>
+        <span class="step-badge" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.5)">30 SECONDS</span>
+      </div>
+      <div class="how-step">
+        <div class="step-num">02</div>
+        <div class="step-title">See Your Dashboard</div>
+        <div class="step-desc">Attendance, upcoming exams, fees, and notices — personalized to your roll number and department.</div>
+        <span class="step-badge" style="background:var(--lime);color:var(--black)">PERSONALIZED</span>
+      </div>
+      <div class="how-step">
+        <div class="step-num">03</div>
+        <div class="step-title">Ask CampusAI</div>
+        <div class="step-desc">Type any question in plain English. The AI searches your college's entire knowledge base instantly.</div>
+        <span class="step-badge" style="background:var(--red);color:var(--white)">AI POWERED</span>
+      </div>
+      <div class="how-step">
+        <div class="step-num">04</div>
+        <div class="step-title">Get Instant Answers</div>
+        <div class="step-desc">Accurate, sourced answers in under 3 seconds. No searching. No waiting. No confusion.</div>
+        <span class="step-badge" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.5)">&lt; 3 SECONDS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<section class="cta-band">
+  <div class="cta-inner">
+    <div>
+      <h2 class="cta-title">Stop searching.<br><span>Start knowing.</span></h2>
+    </div>
+    <div class="cta-right">
+      <a href="login.html" class="cta-btn">
+        Launch CampusAI Now
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <span class="cta-note">Free for all students · No setup needed</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="gs-footer">
+  <div class="footer-inner">
+    <div>
+      <div class="logo-box" style="border-color:var(--white);margin-bottom:20px;display:inline-flex">
+        <span style="font-size:.85rem;font-weight:900;letter-spacing:3px;color:var(--white)">CAMPUS</span>
+        <span style="font-size:.62rem;font-weight:900;letter-spacing:4px;color:rgba(255,255,255,.5);margin-top:2px">AI PORTAL</span>
+      </div>
+      <div class="footer-heading">Your campus.<br>Answered.</div>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h5>Product</h5>
+        <p>AI Assistant</p>
+        <p>Notice Board</p>
+        <p>Dashboard</p>
+        <p>Exam Tracker</p>
+      </div>
+      <div class="footer-col">
+        <h5>Students</h5>
+        <p>Login</p>
+        <p>Register</p>
+        <p>Help & FAQ</p>
+        <p>Report Issue</p>
+      </div>
+      <div class="footer-col">
+        <h5>Built For</h5>
+        <p>WebForge 2026</p>
+        <p>IEEE CIS · MUJ</p>
+        <p>Smart Campus</p>
+        <p>Hackathon</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer-inner" style="padding-top:0">
+    <div class="footer-bottom" style="border-top:1px solid rgba(255,255,255,.2);padding-top:20px;margin-top:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;grid-column:1/-1">
+      <span class="footer-bottom-text">© 2026 CampusAI · Built for WebForge, IEEE CIS MUJ</span>
+      <span class="footer-bottom-text">Prototype — Round 1 Submission</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

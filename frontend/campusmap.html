@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Map — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+.main{padding:32px 28px 80px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:24px 32px;margin-bottom:20px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:6px}
+.ph-title{font-size:1.5rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.75rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:3px}
+.btn-ai{font-size:.68rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:10px 18px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-ai:hover{background:var(--lime-dark)}
+
+/* QUICK SEARCH */
+.quick-search{border:2px solid var(--black);background:var(--white);display:flex;margin-bottom:16px}
+.qs-input{flex:1;border:none;padding:12px 16px;font-family:var(--font);font-size:.88rem;font-weight:700;color:var(--black);outline:none}
+.qs-input::placeholder{color:var(--border);font-weight:600}
+.qs-btn{background:var(--black);color:var(--white);border:none;border-left:2px solid var(--black);padding:12px 20px;cursor:pointer;font-family:var(--font);font-size:.68rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;transition:background .2s}
+.qs-btn:hover{background:var(--red)}
+
+/* CATEGORY FILTERS */
+.cat-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.cat-btn{font-size:.62rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border:2px solid var(--black);background:var(--white);cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;gap:5px}
+.cat-btn:hover{background:var(--off-white)}
+.cat-btn.active{background:var(--black);color:var(--white)}
+
+/* MAP + PANEL LAYOUT */
+.map-layout{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+
+/* MAP CONTAINER */
+.map-container{background:var(--white);border:2px solid var(--black);overflow:hidden;position:relative}
+.map-toolbar{background:var(--black);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.mt-title{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.mt-controls{display:flex;gap:0}
+.mt-btn{width:32px;height:32px;background:rgba(255,255,255,.1);border:none;color:var(--white);cursor:pointer;font-size:1rem;font-weight:900;transition:background .15s;border-right:1px solid rgba(255,255,255,.1)}
+.mt-btn:last-child{border-right:none}
+.mt-btn:hover{background:var(--red)}
+.map-svg-wrap{overflow:hidden;position:relative}
+.map-svg-wrap svg{display:block;cursor:grab;transition:transform .2s}
+.map-svg-wrap svg:active{cursor:grabbing}
+
+/* LOCATION PANEL */
+.location-panel{display:flex;flex-direction:column;gap:12px}
+.lp-header{background:var(--black);padding:12px 16px;border:2px solid var(--black)}
+.lp-title{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+
+/* LOCATION CARD */
+.loc-card{background:var(--white);border:2px solid var(--black);cursor:pointer;transition:all .15s}
+.loc-card:hover{background:var(--off-white)}
+.loc-card.selected{border-color:var(--red);background:#fff8f8}
+.lc-header{padding:12px 14px;border-bottom:1px solid var(--light-gray);display:flex;align-items:center;gap:10px}
+.lc-icon{width:36px;height:36px;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.lc-name{font-size:.85rem;font-weight:900;color:var(--black)}
+.lc-type{font-size:.6rem;font-weight:700;color:var(--gray);margin-top:2px}
+.lc-body{padding:10px 14px}
+.lc-detail{font-size:.72rem;font-weight:700;color:var(--dark-gray);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.lc-tag{font-size:.52rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;margin-top:6px;display:inline-block}
+
+/* SELECTED DETAIL PANEL */
+.detail-panel{background:var(--white);border:2px solid var(--black);display:none}
+.detail-panel.show{display:block}
+.dp-header{background:var(--red);padding:14px 18px}
+.dp-title{font-size:1rem;font-weight:900;color:var(--white)}
+.dp-sub{font-size:.7rem;font-weight:700;color:rgba(255,255,255,.65);margin-top:3px}
+.dp-body{padding:16px}
+.dp-row{display:flex;gap:8px;margin-bottom:8px;font-size:.78rem;font-weight:700;color:var(--dark-gray);align-items:flex-start}
+.dp-row:last-child{margin-bottom:0}
+.dp-icon{flex-shrink:0;margin-top:1px}
+.dp-ai{background:var(--off-white);border-left:3px solid var(--lime);padding:10px 12px;margin:12px 0 0}
+.dp-ai-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:4px}
+.dp-ai-text{font-size:.75rem;font-weight:700;color:var(--dark-gray);line-height:1.55}
+
+/* LEGEND */
+.legend{background:var(--white);border:2px solid var(--black);padding:14px;display:flex;flex-wrap:wrap;gap:10px}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:.65rem;font-weight:800;color:var(--dark-gray)}
+.leg-color{width:14px;height:14px;border:1.5px solid var(--black);flex-shrink:0}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);font-size:.82rem;font-weight:900;padding:14px 28px;border:2px solid rgba(255,255,255,.15);z-index:999;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1100px){.map-layout{grid-template-columns:1fr}}
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div><div class="tb-name">Anoop K.</div><div class="tb-role">4SF23CS021 · CSE IV</div></div>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="examtracker.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="timetable.html" class="nav-item"><span class="icon">📚</span> Timetable</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item"><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+    <a href="faculty.html" class="nav-item"><span class="icon">👨‍🏫</span> Faculty Directory</a>
+    <a href="campusmap.html" class="nav-item active"><span class="icon">📍</span> Campus Map</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div><div class="su-name">Anoop K.</div><div class="su-roll">4SF23CS021</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">✦ INTERACTIVE CAMPUS MAP</div>
+        <div class="ph-title">Campus Map</div>
+        <div class="ph-sub">Click any building to get directions, timings, and AI tips. Sahyadri College, Mangaluru.</div>
+      </div>
+      <button class="btn-ai" onclick="aiLocate()">✦ Where is my next class?</button>
+    </div>
+  </div>
+
+  <!-- QUICK SEARCH -->
+  <div class="quick-search">
+    <input class="qs-input" id="mapSearch" type="text" placeholder="Find a place — library, canteen, CSE block, lab..." oninput="filterLocations(this.value)">
+    <button class="qs-btn" onclick="filterLocations(document.getElementById('mapSearch').value)">Find →</button>
+  </div>
+
+  <!-- CATEGORY FILTERS -->
+  <div class="cat-filters">
+    <button class="cat-btn active" onclick="setCat(this,'all')">📍 All</button>
+    <button class="cat-btn" onclick="setCat(this,'academic')">🏫 Academic</button>
+    <button class="cat-btn" onclick="setCat(this,'lab')">🔬 Labs</button>
+    <button class="cat-btn" onclick="setCat(this,'facility')">🏢 Facilities</button>
+    <button class="cat-btn" onclick="setCat(this,'hostel')">🏠 Hostel</button>
+    <button class="cat-btn" onclick="setCat(this,'food')">🍽️ Food</button>
+  </div>
+
+  <div class="map-layout">
+
+    <!-- MAP -->
+    <div>
+      <div class="map-container">
+        <div class="map-toolbar">
+          <span class="mt-title">Sahyadri College of Engineering — Campus Layout</span>
+          <div class="mt-controls">
+            <button class="mt-btn" onclick="zoom(1.2)">+</button>
+            <button class="mt-btn" onclick="zoom(0.8)">−</button>
+            <button class="mt-btn" onclick="resetZoom()">⊙</button>
+          </div>
+        </div>
+        <div class="map-svg-wrap" id="mapWrap">
+          <svg id="campusSvg" width="100%" viewBox="0 0 800 580" xmlns="http://www.w3.org/2000/svg" style="background:#e8f4e8">
+
+            <!-- GROUND / PATHS -->
+            <!-- Main road -->
+            <rect x="0" y="270" width="800" height="40" fill="#c8c8c0" opacity=".6"/>
+            <text x="400" y="294" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="700" fill="#888">MAIN CAMPUS ROAD</text>
+            <!-- Vertical path -->
+            <rect x="380" y="0" width="30" height="580" fill="#c8c8c0" opacity=".4"/>
+            <!-- Parking -->
+            <rect x="10" y="310" width="120" height="80" fill="#d4d0c4" rx="4"/>
+            <text x="70" y="348" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="700" fill="#666">PARKING</text>
+            <text x="70" y="362" text-anchor="middle" font-family="Nunito" font-size="9" fill="#888">🚗 100 slots</text>
+
+            <!-- MAIN BLOCK -->
+            <g class="map-building" onclick="selectBuilding('main')" style="cursor:pointer">
+              <rect x="50" y="40" width="280" height="180" rx="6" fill="#e5473b" stroke="#111" stroke-width="2" opacity=".85" id="bld-main"/>
+              <text x="190" y="110" text-anchor="middle" font-family="Nunito" font-size="15" font-weight="900" fill="white">MAIN BLOCK</text>
+              <text x="190" y="130" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="700" fill="rgba(255,255,255,.7)">Admin · Principal · Exam</text>
+              <text x="190" y="150" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="700" fill="rgba(255,255,255,.7)">Accounts · HOD Rooms</text>
+              <rect x="60" y="165" width="80" height="20" rx="3" fill="rgba(255,255,255,.15)"/>
+              <text x="100" y="179" text-anchor="middle" font-family="Nunito" font-size="9" font-weight="900" fill="white">GF–3F · 8AM–6PM</text>
+              <circle cx="190" cy="80" r="12" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="190" y="85" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="900" fill="white">M</text>
+            </g>
+
+            <!-- CSE BLOCK -->
+            <g class="map-building" onclick="selectBuilding('cse')" style="cursor:pointer">
+              <rect x="450" y="40" width="200" height="180" rx="6" fill="#2563eb" stroke="#111" stroke-width="2" opacity=".85" id="bld-cse"/>
+              <text x="550" y="110" text-anchor="middle" font-family="Nunito" font-size="14" font-weight="900" fill="white">CSE BLOCK</text>
+              <text x="550" y="128" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="700" fill="rgba(255,255,255,.7)">Rooms 301–405</text>
+              <text x="550" y="145" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="700" fill="rgba(255,255,255,.7)">HOD: Rm 405</text>
+              <rect x="460" y="162" width="80" height="20" rx="3" fill="rgba(255,255,255,.15)"/>
+              <text x="500" y="176" text-anchor="middle" font-family="Nunito" font-size="9" font-weight="900" fill="white">4F · 8AM–6PM</text>
+              <circle cx="550" cy="80" r="12" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="550" y="85" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="900" fill="white">C</text>
+            </g>
+
+            <!-- ECE BLOCK -->
+            <g class="map-building" onclick="selectBuilding('ece')" style="cursor:pointer">
+              <rect x="670" y="40" width="120" height="160" rx="6" fill="#7c3aed" stroke="#111" stroke-width="2" opacity=".85" id="bld-ece"/>
+              <text x="730" y="100" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="900" fill="white">ECE</text>
+              <text x="730" y="116" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="700" fill="rgba(255,255,255,.7)">BLOCK</text>
+              <text x="730" y="140" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.6)">Rm 201–220</text>
+              <circle cx="730" cy="70" r="10" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="730" y="75" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="900" fill="white">E</text>
+            </g>
+
+            <!-- LAB BLOCK -->
+            <g class="map-building" onclick="selectBuilding('lab')" style="cursor:pointer">
+              <rect x="50" y="320" width="200" height="140" rx="6" fill="#0d9488" stroke="#111" stroke-width="2" opacity=".85" id="bld-lab"/>
+              <text x="150" y="380" text-anchor="middle" font-family="Nunito" font-size="13" font-weight="900" fill="white">LAB BLOCK</text>
+              <text x="150" y="398" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="700" fill="rgba(255,255,255,.7)">CN · MES · DBMS Labs</text>
+              <text x="150" y="414" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.5)">Lab 1–6 · 8AM–5PM</text>
+              <circle cx="150" cy="350" r="10" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="150" y="355" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="900" fill="white">L</text>
+            </g>
+
+            <!-- LIBRARY -->
+            <g class="map-building" onclick="selectBuilding('library')" style="cursor:pointer">
+              <rect x="270" y="320" width="160" height="120" rx="6" fill="#b45309" stroke="#111" stroke-width="2" opacity=".85" id="bld-library"/>
+              <text x="350" y="370" text-anchor="middle" font-family="Nunito" font-size="13" font-weight="900" fill="white">LIBRARY</text>
+              <text x="350" y="387" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.65)">10,000+ books</text>
+              <text x="350" y="403" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.5)">8AM–8PM Mon–Sat</text>
+              <circle cx="350" cy="347" r="10" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="350" y="352" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="900" fill="white">Li</text>
+            </g>
+
+            <!-- CANTEEN -->
+            <g class="map-building" onclick="selectBuilding('canteen')" style="cursor:pointer">
+              <rect x="450" y="320" width="140" height="100" rx="6" fill="#c8f000" stroke="#111" stroke-width="2" opacity=".9" id="bld-canteen"/>
+              <text x="520" y="362" text-anchor="middle" font-family="Nunito" font-size="13" font-weight="900" fill="#111">CANTEEN</text>
+              <text x="520" y="378" text-anchor="middle" font-family="Nunito" font-size="9" font-weight="700" fill="#555">8AM–8PM</text>
+              <text x="520" y="393" text-anchor="middle" font-family="Nunito" font-size="9" fill="#666">Veg · Non-Veg</text>
+              <circle cx="520" cy="340" r="10" fill="rgba(0,0,0,.1)" stroke="rgba(0,0,0,.2)" stroke-width="1.5"/>
+              <text x="520" y="345" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="900" fill="#111">Ca</text>
+            </g>
+
+            <!-- SPORTS GROUND -->
+            <g class="map-building" onclick="selectBuilding('sports')" style="cursor:pointer">
+              <rect x="620" y="320" width="170" height="140" rx="6" fill="#15803d" stroke="#111" stroke-width="2" opacity=".75" id="bld-sports"/>
+              <text x="705" y="375" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="900" fill="white">SPORTS</text>
+              <text x="705" y="392" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="900" fill="white">GROUND</text>
+              <text x="705" y="410" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.6)">Cricket · Football · Basket</text>
+              <circle cx="705" cy="350" r="10" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="705" y="355" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="900" fill="white">Sp</text>
+            </g>
+
+            <!-- HOSTEL A -->
+            <g class="map-building" onclick="selectBuilding('hostela')" style="cursor:pointer">
+              <rect x="50" y="480" width="140" height="90" rx="6" fill="#e8624e" stroke="#111" stroke-width="2" opacity=".8" id="bld-hostela"/>
+              <text x="120" y="522" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="900" fill="white">HOSTEL A</text>
+              <text x="120" y="538" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.65)">Boys · 200 rooms</text>
+              <circle cx="120" cy="500" r="8" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="120" y="505" text-anchor="middle" font-family="Nunito" font-size="9" font-weight="900" fill="white">A</text>
+            </g>
+
+            <!-- HOSTEL B -->
+            <g class="map-building" onclick="selectBuilding('hostelb')" style="cursor:pointer">
+              <rect x="210" y="480" width="140" height="90" rx="6" fill="#e8624e" stroke="#111" stroke-width="2" opacity=".8" id="bld-hostelb"/>
+              <text x="280" y="522" text-anchor="middle" font-family="Nunito" font-size="12" font-weight="900" fill="white">HOSTEL B</text>
+              <text x="280" y="538" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.65)">Girls · 150 rooms</text>
+              <circle cx="280" cy="500" r="8" fill="rgba(255,255,255,.2)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+              <text x="280" y="505" text-anchor="middle" font-family="Nunito" font-size="9" font-weight="900" fill="white">B</text>
+            </g>
+
+            <!-- SEMINAR HALL -->
+            <g class="map-building" onclick="selectBuilding('seminar')" style="cursor:pointer">
+              <rect x="450" y="460" width="140" height="90" rx="6" fill="#374151" stroke="#111" stroke-width="2" opacity=".85" id="bld-seminar"/>
+              <text x="520" y="500" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="900" fill="white">SEMINAR</text>
+              <text x="520" y="516" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="900" fill="white">HALL</text>
+              <text x="520" y="532" text-anchor="middle" font-family="Nunito" font-size="9" fill="rgba(255,255,255,.5)">Cap: 300 · AC</text>
+            </g>
+
+            <!-- YOU ARE HERE PIN -->
+            <g id="youPin" style="display:none">
+              <circle cx="0" cy="0" r="14" fill="var(--red)" stroke="white" stroke-width="3" id="pinCircle"/>
+              <text text-anchor="middle" dominant-baseline="central" font-family="Nunito" font-size="9" font-weight="900" fill="white" id="pinText">YOU</text>
+            </g>
+
+            <!-- COMPASS -->
+            <g transform="translate(756,30)">
+              <circle cx="0" cy="0" r="18" fill="white" stroke="#111" stroke-width="1.5" opacity=".9"/>
+              <text x="0" y="-7" text-anchor="middle" font-family="Nunito" font-size="9" font-weight="900" fill="#e5473b">N</text>
+              <text x="0" y="13" text-anchor="middle" font-family="Nunito" font-size="8" fill="#888">S</text>
+              <text x="-12" y="3" text-anchor="middle" font-family="Nunito" font-size="8" fill="#888">W</text>
+              <text x="12" y="3" text-anchor="middle" font-family="Nunito" font-size="8" fill="#888">E</text>
+              <polygon points="0,-14 3,0 0,4 -3,0" fill="#e5473b"/>
+              <polygon points="0,14 3,0 0,4 -3,0" fill="#888"/>
+            </g>
+
+          </svg>
+        </div>
+      </div>
+
+      <!-- LEGEND -->
+      <div class="legend" style="margin-top:12px">
+        <div class="leg-item"><div class="leg-color" style="background:#e5473b"></div>Main Block</div>
+        <div class="leg-item"><div class="leg-color" style="background:#2563eb"></div>CSE Block</div>
+        <div class="leg-item"><div class="leg-color" style="background:#7c3aed"></div>ECE Block</div>
+        <div class="leg-item"><div class="leg-color" style="background:#0d9488"></div>Lab Block</div>
+        <div class="leg-item"><div class="leg-color" style="background:#b45309"></div>Library</div>
+        <div class="leg-item"><div class="leg-color" style="background:#c8f000;border-color:#111"></div>Canteen</div>
+        <div class="leg-item"><div class="leg-color" style="background:#15803d"></div>Sports</div>
+        <div class="leg-item"><div class="leg-color" style="background:#e8624e"></div>Hostel</div>
+        <div class="leg-item"><div class="leg-color" style="background:#374151"></div>Seminar Hall</div>
+      </div>
+    </div>
+
+    <!-- LOCATION PANEL -->
+    <div class="location-panel">
+      <div class="lp-header"><div class="lp-title">📍 Campus Locations</div></div>
+
+      <!-- DETAIL PANEL (shown on click) -->
+      <div class="detail-panel" id="detailPanel">
+        <div class="dp-header">
+          <div class="dp-title" id="dpTitle">—</div>
+          <div class="dp-sub" id="dpSub">—</div>
+        </div>
+        <div class="dp-body" id="dpBody"></div>
+      </div>
+
+      <!-- LOCATION LIST -->
+      <div id="locationList"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LOCATIONS = [
+  { id:'main',    icon:'🏛️', name:'Main Block',       type:'Academic',  cat:'academic', floor:'G–3F', hours:'8AM–6PM',  desc:'Principal office, admin, exam section, accounts, HOD rooms. All college administrative work.', ai:'Your exam section is on the ground floor (Room 102). Accounts office is also GF. Principal cabin is on 2nd floor — appointment required.' },
+  { id:'cse',     icon:'💻', name:'CSE Block',         type:'Academic',  cat:'academic', floor:'G–4F', hours:'8AM–6PM',  desc:'All CSE department classrooms and faculty cabins. Rooms 301–405. HOD Dr. Nair in Room 405.', ai:'Your next class (MES) is in Room 204, CSE Block. DAA is in Room 301. The HOD cabin is on the 4th floor — take the elevator.' },
+  { id:'ece',     icon:'⚡', name:'ECE Block',         type:'Academic',  cat:'academic', floor:'G–2F', hours:'8AM–6PM',  desc:'ECE department classrooms, labs, and faculty rooms. Rooms 201–220.', ai:'ECE Block is adjacent to CSE Block. For cross-department electives, check the notice board for room allocation.' },
+  { id:'lab',     icon:'🔬', name:'Lab Block',         type:'Lab',       cat:'lab',      floor:'G–1F', hours:'8AM–5PM',  desc:'CN Lab (Lab 3), MES Lab, DBMS Lab, Programming Lab. All practical sessions held here.', ai:'Your CN Lab exam is in Lab Block 3 tomorrow at 10AM. Bring your hall ticket and a pen drive with lab programs.' },
+  { id:'library', icon:'📚', name:'Library',           type:'Facility',  cat:'facility', floor:'G–1F', hours:'8AM–8PM',  desc:'Main library with 10,000+ books, journals, e-resources, and reading room. Silent zone.', ai:'Library has extended hours till 8PM — perfect for exam prep. The Lost & Found security desk is at the library entrance.' },
+  { id:'canteen', icon:'🍽️', name:'Canteen',           type:'Food',      cat:'food',     floor:'GF',   hours:'8AM–8PM',  desc:'Main college canteen with veg and non-veg options. Tea, snacks, full meals. Very affordable.', ai:'The canteen is open till 8PM. Lunch rush is 1–2PM. Best time to go: 12PM or after 2PM to avoid queues.' },
+  { id:'sports',  icon:'⚽', name:'Sports Ground',     type:'Facility',  cat:'facility', floor:'Open', hours:'6AM–8PM',  desc:'Cricket pitch, football field, basketball court, volleyball court. Open to all students.', ai:'Sports ground is open early morning (6AM). Good stress buster during exam week!' },
+  { id:'hostela', icon:'🏠', name:'Hostel A (Boys)',   type:'Hostel',    cat:'hostel',   floor:'G–4F', hours:'24/7',    desc:'Boys hostel with 200 rooms. Entry closes at 10PM weekdays, 11PM weekends. Warden: Mr. Kumar.', ai:'Entry timing extended to 10:30PM during exam period (June 13–July 5). Gate pass required for any outing.' },
+  { id:'hostelb', icon:'🏠', name:'Hostel B (Girls)',  type:'Hostel',    cat:'hostel',   floor:'G–3F', hours:'24/7',    desc:'Girls hostel with 150 rooms. Separate entry gate. Warden: Ms. Priya. Strict entry rules.', ai:'Girls hostel has strict entry rules. Contact the warden (ext 3001) for any exceptions or gate pass approvals.' },
+  { id:'seminar', icon:'🎤', name:'Seminar Hall',      type:'Facility',  cat:'facility', floor:'GF',   hours:'9AM–6PM',  desc:'Air-conditioned seminar hall with 300 capacity. Used for guest lectures, workshops, placements.', ai:'Placement drives are held here. Check the notice board for company visit schedules during placement season.' },
+];
+
+let activeCat = 'all';
+let selectedId = null;
+
+function renderLocationList(filter='') {
+  const list = document.getElementById('locationList');
+  const filtered = LOCATIONS.filter(l => {
+    const catMatch = activeCat === 'all' || l.cat === activeCat;
+    const searchMatch = !filter || l.name.toLowerCase().includes(filter.toLowerCase()) || l.type.toLowerCase().includes(filter.toLowerCase());
+    return catMatch && searchMatch;
+  });
+  list.innerHTML = filtered.map(l => `
+    <div class="loc-card ${selectedId===l.id?'selected':''}" onclick="selectBuilding('${l.id}')">
+      <div class="lc-header">
+        <div class="lc-icon">${l.icon}</div>
+        <div>
+          <div class="lc-name">${l.name}</div>
+          <div class="lc-type">${l.type} · ${l.floor}</div>
+        </div>
+      </div>
+      <div class="lc-body">
+        <div class="lc-detail">🕐 ${l.hours}</div>
+      </div>
+    </div>`).join('');
+}
+
+function selectBuilding(id) {
+  selectedId = id;
+  const loc = LOCATIONS.find(l => l.id === id);
+  if (!loc) return;
+
+  // Highlight on map
+  document.querySelectorAll('.map-building rect').forEach(r => r.style.filter = '');
+  const bld = document.getElementById('bld-'+id);
+  if (bld) bld.style.filter = 'brightness(1.3) drop-shadow(0 0 8px rgba(0,0,0,.5))';
+
+  // Show detail panel
+  const panel = document.getElementById('detailPanel');
+  document.getElementById('dpTitle').textContent = loc.icon + ' ' + loc.name;
+  document.getElementById('dpSub').textContent = loc.type + ' · ' + loc.floor + ' · ' + loc.hours;
+  document.getElementById('dpBody').innerHTML = `
+    <div class="dp-row"><span class="dp-icon">📋</span>${loc.desc}</div>
+    <div class="dp-ai">
+      <div class="dp-ai-label">✦ AI TIP</div>
+      <div class="dp-ai-text">${loc.ai}</div>
+    </div>
+    <button style="margin-top:12px;font-size:.65rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--black);color:var(--white);border:2px solid var(--black);padding:9px 16px;cursor:pointer;font-family:var(--font);width:100%;transition:background .2s" onmouseover="this.style.background='var(--red)'" onmouseout="this.style.background='var(--black)'" onclick="showToast('📍 Navigating to ${loc.name}...')">Get Directions →</button>
+  `;
+  panel.classList.add('show');
+  renderLocationList(document.getElementById('mapSearch').value);
+}
+
+function setCat(btn, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCat = cat;
+  renderLocationList(document.getElementById('mapSearch').value);
+}
+
+function filterLocations(val) {
+  renderLocationList(val);
+  if (val) {
+    const match = LOCATIONS.find(l => l.name.toLowerCase().includes(val.toLowerCase()));
+    if (match) selectBuilding(match.id);
+  }
+}
+
+function aiLocate() {
+  selectBuilding('cse');
+  showToast('🤖 Your next class: MES — Room 204, CSE Block. 10 min walk from hostel.');
+}
+
+let scale = 1;
+function zoom(factor) {
+  scale *= factor;
+  scale = Math.max(0.5, Math.min(2.5, scale));
+  document.getElementById('campusSvg').style.transform = `scale(${scale})`;
+  document.getElementById('campusSvg').style.transformOrigin = 'top left';
+}
+function resetZoom() {
+  scale = 1;
+  document.getElementById('campusSvg').style.transform = 'scale(1)';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+renderLocationList();
+</script>
+</body>
+</html>

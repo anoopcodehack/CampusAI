@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Risk — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --warn:#f59e0b;--font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+/* TOP BAR */
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+/* SIDEBAR */
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+/* MAIN */
+.main{padding:32px 28px 60px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.ph-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.ph-badge{background:var(--red);padding:12px 20px;text-align:center;flex-shrink:0}
+.ph-badge-num{font-size:2.2rem;font-weight:900;color:var(--white);line-height:1}
+.ph-badge-label{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* OVERALL RISK CARD */
+.overall-risk{border:2px solid var(--black);background:var(--white);margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.or-block{padding:24px 22px;border-right:2px solid var(--black)}
+.or-block:last-child{border-right:none}
+.or-lbl{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:8px}
+.or-val{font-size:2.4rem;font-weight:900;line-height:1}
+.or-sub{font-size:.72rem;font-weight:700;color:var(--gray);margin-top:5px}
+.or-accent{height:4px;margin-top:16px}
+
+/* AI VERDICT BANNER */
+.verdict{border:2px solid var(--black);padding:20px 24px;margin-bottom:24px;display:flex;align-items:flex-start;gap:16px}
+.verdict.safe{background:#f0fff4;border-color:var(--success)}
+.verdict.warning{background:#fffbeb;border-color:var(--warn)}
+.verdict.danger{background:#fff1f1;border-color:var(--red)}
+.verdict-icon{font-size:2rem;flex-shrink:0;line-height:1}
+.verdict-ai-label{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.verdict-ai-label .ai-dot{width:6px;height:6px;border-radius:50%;animation:blink 1.5s infinite}
+.verdict-title{font-size:1.1rem;font-weight:900;color:var(--black);margin-bottom:6px}
+.verdict-text{font-size:.85rem;font-weight:700;color:var(--dark-gray);line-height:1.65}
+.verdict-text strong{color:var(--black)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* SUBJECT GRID */
+.subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+
+/* SUBJECT CARD */
+.subject-card{background:var(--white);border:2px solid var(--black);transition:all .2s}
+.subject-card:hover{box-shadow:4px 4px 0 var(--black)}
+.sc-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--black)}
+.sc-name{font-size:.92rem;font-weight:900;color:var(--black)}
+.sc-code{font-size:.6rem;font-weight:900;letter-spacing:2px;color:var(--gray)}
+.sc-status{font-size:.55rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border:2px solid}
+.status-safe{background:#f0fff4;color:#15803d;border-color:#86efac}
+.status-warn{background:#fffbeb;color:#92400e;border-color:#fde047}
+.status-danger{background:#fff1f1;color:var(--red);border-color:#fca5a5}
+.sc-body{padding:18px}
+
+/* CIRCULAR PROGRESS */
+.sc-pct-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.circle-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.circle-svg{transform:rotate(-90deg)}
+.circle-bg{fill:none;stroke:var(--light-gray);stroke-width:6}
+.circle-fg{fill:none;stroke-width:6;stroke-linecap:butt;transition:stroke-dashoffset 1s ease}
+.circle-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ct-pct{font-size:.95rem;font-weight:900;line-height:1}
+.ct-label{font-size:.45rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--gray)}
+.sc-counts{flex:1}
+.sc-count-row{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px}
+.sc-count-key{font-weight:700;color:var(--gray)}
+.sc-count-val{font-weight:900;color:var(--black)}
+
+/* AI INSIGHT */
+.sc-insight{border-left:3px solid var(--lime);background:var(--off-white);padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--dark-gray);line-height:1.55}
+.sc-insight strong{color:var(--black)}
+.sc-insight-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.sc-insight.danger-insight{border-left-color:var(--red);background:#fff8f8}
+.sc-insight.danger-insight .sc-insight-label{color:var(--red)}
+.sc-insight.warn-insight{border-left-color:var(--warn);background:#fffdf5}
+.sc-insight.warn-insight .sc-insight-label{color:var(--warn)}
+
+/* INTERACTIVE SIMULATOR */
+.simulator{background:var(--white);border:2px solid var(--black);margin-bottom:24px}
+.sim-header{background:var(--red);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.sim-title{font-size:.62rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.sim-badge{background:var(--lime);color:var(--black);font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:3px 9px}
+.sim-body{padding:24px}
+.sim-desc{font-size:.85rem;font-weight:700;color:var(--gray);margin-bottom:24px;line-height:1.6}
+.sim-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.sim-subject{border:2px solid var(--black);padding:16px 14px}
+.sim-s-name{font-size:.72rem;font-weight:900;color:var(--black);margin-bottom:12px;letter-spacing:.5px}
+.sim-controls{display:flex;flex-direction:column;gap:8px}
+.sim-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sim-row-label{font-size:.62rem;font-weight:700;color:var(--gray)}
+.counter{display:flex;align-items:center;gap:0;border:2px solid var(--black)}
+.counter-btn{width:28px;height:28px;background:var(--black);color:var(--white);border:none;cursor:pointer;font-size:1rem;font-weight:900;font-family:var(--font);display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.counter-btn:hover{background:var(--red)}
+.counter-val{width:36px;height:28px;text-align:center;font-size:.82rem;font-weight:900;color:var(--black);background:var(--white);border:none;border-left:2px solid var(--black);border-right:2px solid var(--black);font-family:var(--font);outline:none}
+.sim-result{border:2px solid var(--black);padding:20px;background:var(--off-white)}
+.sim-result-title{font-size:.58rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:16px}
+.sim-result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sim-r-block{padding:14px 12px;border:2px solid var(--black);background:var(--white);text-align:center}
+.sim-r-subject{font-size:.6rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+.sim-r-pct{font-size:1.4rem;font-weight:900;line-height:1}
+.sim-r-verdict{font-size:.55rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border:1.5px solid;display:inline-block;margin-top:6px}
+.sim-r-canSkip{font-size:.65rem;font-weight:800;color:var(--gray);margin-top:5px}
+
+/* WHAT-IF STRIP */
+.whatif-strip{border:2px solid var(--black);background:var(--black);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.wi-title{font-size:.9rem;font-weight:900;color:var(--white)}
+.wi-sub{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.wi-scenarios{display:flex;gap:10px;flex-wrap:wrap}
+.wi-btn{font-size:.68rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;border:2px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent;padding:9px 16px;cursor:pointer;font-family:var(--font);transition:all .2s}
+.wi-btn:hover,.wi-btn.active{background:var(--lime);color:var(--black);border-color:var(--lime)}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .subject-grid{grid-template-columns:1fr}
+  .sim-grid{grid-template-columns:1fr 1fr}
+  .sim-result-grid{grid-template-columns:1fr 1fr}
+  .overall-risk{grid-template-columns:1fr}
+  .or-block{border-right:none;border-bottom:2px solid var(--black)}
+  .or-block:last-child{border-bottom:none}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div>
+      <div class="tb-name">Anoop K.</div>
+      <div class="tb-role">4SF23CS021 · CSE IV</div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item active"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="dashboard.html" class="nav-item"><span class="icon">📚</span> Timetable</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div>
+        <div class="su-name">Anoop K.</div>
+        <div class="su-roll">4SF23CS021</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">✦ AI-POWERED PREDICTOR</div>
+        <div class="ph-title">Attendance Risk Analyser</div>
+        <div class="ph-sub">Know exactly how many classes you can skip — or must attend — to stay safe for exams.</div>
+      </div>
+      <div class="ph-badge">
+        <div class="ph-badge-num" id="overallPct">83%</div>
+        <div class="ph-badge-label">Overall Avg.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERALL RISK -->
+  <div class="overall-risk">
+    <div class="or-block">
+      <div class="or-lbl">Overall Status</div>
+      <div class="or-val" id="overallStatus" style="color:var(--warn);font-size:1.5rem">⚠ AT RISK</div>
+      <div class="or-sub">1 subject below 75%</div>
+      <div class="or-accent" style="background:var(--warn)"></div>
+    </div>
+    <div class="or-block">
+      <div class="or-lbl">Classes Can Skip</div>
+      <div class="or-val" id="totalCanSkip" style="color:var(--success)">12</div>
+      <div class="or-sub">across all subjects combined</div>
+      <div class="or-accent" style="background:var(--success)"></div>
+    </div>
+    <div class="or-block">
+      <div class="or-lbl">Must Attend (DAA)</div>
+      <div class="or-val" id="mustAttend" style="color:var(--red)">4</div>
+      <div class="or-sub">more to reach 75% in DAA</div>
+      <div class="or-accent" style="background:var(--red)"></div>
+    </div>
+  </div>
+
+  <!-- AI VERDICT -->
+  <div class="verdict warning" id="verdictBanner">
+    <div class="verdict-icon">⚠️</div>
+    <div>
+      <div class="verdict-ai-label" style="color:var(--warn)">
+        <div class="ai-dot" style="background:var(--warn)"></div>
+        CAMPUSAI RISK ASSESSMENT
+      </div>
+      <div class="verdict-title" id="verdictTitle">You're borderline. One subject needs urgent attention.</div>
+      <div class="verdict-text" id="verdictText">
+        Your <strong>DAA attendance is 74%</strong> — just 1% below the minimum. You <strong>must attend the next 4 DAA classes</strong> without skipping any to qualify for exams. Your other subjects are safe. Stop skipping DAA — the risk is not worth it.
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBJECT CARDS -->
+  <div class="subject-grid" id="subjectGrid">
+    <!-- Rendered by JS -->
+  </div>
+
+  <!-- SIMULATOR -->
+  <div class="simulator">
+    <div class="sim-header">
+      <span class="sim-title">📐 What-If Simulator — Plan Your Skips</span>
+      <span class="sim-badge">INTERACTIVE</span>
+    </div>
+    <div class="sim-body">
+      <p class="sim-desc">Adjust the classes you plan to attend or skip going forward. CampusAI will instantly recalculate your final attendance percentage and tell you if you're safe.</p>
+      <div class="sim-grid" id="simGrid">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="sim-result">
+        <div class="sim-result-title">Projected Final Attendance — After Simulation</div>
+        <div class="sim-result-grid" id="simResultGrid">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT-IF SCENARIOS -->
+  <div class="whatif-strip">
+    <div>
+      <div class="wi-title">Quick Scenarios</div>
+      <div class="wi-sub">Apply a preset to see your projected attendance instantly</div>
+    </div>
+    <div class="wi-scenarios">
+      <button class="wi-btn" onclick="applyScenario('skip0')">Attend all remaining</button>
+      <button class="wi-btn" onclick="applyScenario('skip1')">Skip 1 per subject</button>
+      <button class="wi-btn" onclick="applyScenario('skip2')">Skip 2 per subject</button>
+      <button class="wi-btn" onclick="applyScenario('worst')">Miss exam week</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── DATA ──
+const SUBJECTS = [
+  { code:'CN',   name:'Computer Networks',               total:52, attended:48, remaining:8,  perWeek:2 },
+  { code:'MES',  name:'Microprocessors & Embedded Sys.', total:48, attended:42, remaining:10, perWeek:2 },
+  { code:'DAA',  name:'Design & Analysis of Algorithms', total:50, attended:37, remaining:12, perWeek:3 },
+  { code:'DBMS', name:'Database Management Systems',     total:46, attended:44, remaining:6,  perWeek:2 },
+];
+
+// sim state: extra attended going forward
+let simAttend = { CN:8, MES:10, DAA:12, DBMS:6 };
+
+function pct(attended, total){ return total===0 ? 0 : Math.round((attended/total)*100); }
+
+function statusInfo(p){
+  if(p>=85) return {label:'SAFE',   cls:'status-safe',  color:'var(--success)', insightCls:''};
+  if(p>=75) return {label:'OK',     cls:'status-warn',  color:'var(--warn)',    insightCls:'warn-insight'};
+  return       {label:'DANGER',  cls:'status-danger',color:'var(--red)',     insightCls:'danger-insight'};
+}
+
+function canSkipMore(s){
+  // how many more can be skipped from remaining while staying >=75
+  // (attended + x) / (total + remaining) >= 0.75
+  // x = classes attended from remaining
+  // want min x such that pct >= 75
+  // solve: (attended + x) / (total + remaining) >= 0.75
+  // x >= 0.75*(total+remaining) - attended
+  const minAttend = Math.ceil(0.75*(s.total + s.remaining) - s.attended);
+  const canSkip = s.remaining - Math.max(0, minAttend);
+  return Math.max(0, canSkip);
+}
+
+function mustAttendMore(s){
+  const minAttend = Math.ceil(0.75*(s.total + s.remaining) - s.attended);
+  if(minAttend <= 0) return 0;
+  return Math.min(s.remaining, minAttend);
+}
+
+function aiInsight(s){
+  const p = pct(s.attended, s.total);
+  const skip = canSkipMore(s);
+  const must = mustAttendMore(s);
+  const finalSafe = pct(s.attended + s.remaining, s.total + s.remaining);
+
+  if(p < 75){
+    return `You're <strong>below 75%</strong> — currently at risk of being <strong>detained</strong> from ${s.code} exams. You must attend <strong>at least ${must} more ${s.code} classes</strong> to qualify. Don't skip a single one.`;
+  } else if(p < 80){
+    return `You're just above the limit. You can skip <strong>${skip} more ${s.code} class${skip===1?'':'es'}</strong> safely. Even if you attend all remaining, you'll end at <strong>${finalSafe}%</strong>. Stay alert.`;
+  } else {
+    return `You're safe in ${s.code}. You can afford to skip <strong>${skip} class${skip===1?'':'es'}</strong> and still stay above 75%. If you attend all remaining, you'll finish at <strong>${finalSafe}%</strong>.`;
+  }
+}
+
+function circleStroke(p, isRed){
+  const r = 28; const circ = 2*Math.PI*r;
+  const color = p<75?'var(--red)':p<85?'var(--warn)':'var(--success)';
+  const offset = circ - (p/100)*circ;
+  return {circ, offset, color};
+}
+
+function renderSubjectCards(){
+  const grid = document.getElementById('subjectGrid');
+  grid.innerHTML = SUBJECTS.map(s=>{
+    const p = pct(s.attended, s.total);
+    const st = statusInfo(p);
+    const {circ, offset, color} = circleStroke(p);
+    const skip = canSkipMore(s);
+    const must = mustAttendMore(s);
+    const insight = aiInsight(s);
+    const insightCls = st.insightCls;
+    return `
+    <div class="subject-card">
+      <div class="sc-header">
+        <div>
+          <div class="sc-name">${s.name}</div>
+          <div class="sc-code">${s.code} · IV SEM</div>
+        </div>
+        <span class="sc-status ${st.cls}">${st.label}</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-pct-row">
+          <div class="circle-wrap">
+            <svg class="circle-svg" width="72" height="72" viewBox="0 0 72 72">
+              <circle class="circle-bg" cx="36" cy="36" r="28"/>
+              <circle class="circle-fg" cx="36" cy="36" r="28"
+                stroke="${color}"
+                stroke-dasharray="${circ.toFixed(1)}"
+                stroke-dashoffset="${offset.toFixed(1)}"/>
+            </svg>
+            <div class="circle-text">
+              <span class="ct-pct" style="color:${color}">${p}%</span>
+              <span class="ct-label">ATT.</span>
+            </div>
+          </div>
+          <div class="sc-counts">
+            <div class="sc-count-row"><span class="sc-count-key">Attended</span><span class="sc-count-val">${s.attended} / ${s.total}</span></div>
+            <div class="sc-count-row"><span class="sc-count-key">Remaining</span><span class="sc-count-val">${s.remaining} classes</span></div>
+            <div class="sc-count-row"><span class="sc-count-key">Can Skip</span><span class="sc-count-val" style="color:${skip>0?'var(--success)':'var(--red)'}">${skip > 0 ? skip+' more' : '⚠ None'}</span></div>
+            <div class="sc-count-row"><span class="sc-count-key">Must Attend</span><span class="sc-count-val" style="color:${must>0?'var(--red)':'var(--success)'}">${must > 0 ? must+' min.' : '✓ You\'re fine'}</span></div>
+          </div>
+        </div>
+        <div class="sc-insight ${insightCls}">
+          <div class="sc-insight-label">
+            <span>✦</span> AI INSIGHT
+          </div>
+          ${insight}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSimulator(){
+  const simGrid = document.getElementById('simGrid');
+  simGrid.innerHTML = SUBJECTS.map(s=>{
+    const attend = simAttend[s.code];
+    const skip = s.remaining - attend;
+    return `
+    <div class="sim-subject">
+      <div class="sim-s-name">${s.code}</div>
+      <div class="sim-controls">
+        <div class="sim-row">
+          <span class="sim-row-label">Attend</span>
+          <div class="counter">
+            <button class="counter-btn" onclick="changeAttend('${s.code}',-1)">−</button>
+            <input class="counter-val" id="att_${s.code}" value="${attend}" readonly>
+            <button class="counter-btn" onclick="changeAttend('${s.code}',1)">+</button>
+          </div>
+        </div>
+        <div class="sim-row">
+          <span class="sim-row-label">Skip</span>
+          <div style="font-size:.88rem;font-weight:900;color:${skip>0?'var(--gray)':'var(--success)'}">${Math.max(0,skip)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  renderSimResult();
+}
+
+function renderSimResult(){
+  const grid = document.getElementById('simResultGrid');
+  grid.innerHTML = SUBJECTS.map(s=>{
+    const extraAttend = simAttend[s.code];
+    const newAttended = s.attended + extraAttend;
+    const newTotal = s.total + s.remaining;
+    const newPct = pct(newAttended, newTotal);
+    const st = statusInfo(newPct);
+    const color = newPct<75?'var(--red)':newPct<85?'var(--warn)':'var(--success)';
+    const canS = canSkipMoreSim(s, extraAttend);
+    return `
+    <div class="sim-r-block">
+      <div class="sim-r-subject">${s.code}</div>
+      <div class="sim-r-pct" style="color:${color}">${newPct}%</div>
+      <span class="sim-r-verdict ${st.cls}">${st.label}</span>
+      <div class="sim-r-canSkip">${newPct>=75?'Can skip '+canS+' more':'⚠ Still at risk'}</div>
+    </div>`;
+  }).join('');
+}
+
+function canSkipMoreSim(s, extraAttend){
+  const newAttended = s.attended + extraAttend;
+  const newTotal = s.total + s.remaining;
+  const alreadySkipped = s.remaining - extraAttend;
+  // from the remaining that we haven't yet accounted (0, since sim covers all remaining)
+  // just report current projected status
+  const surplus = newAttended - Math.ceil(0.75*newTotal);
+  return Math.max(0, surplus);
+}
+
+function changeAttend(code, delta){
+  const s = SUBJECTS.find(x=>x.code===code);
+  simAttend[code] = Math.max(0, Math.min(s.remaining, simAttend[code]+delta));
+  document.getElementById('att_'+code).value = simAttend[code];
+  renderSimResult();
+}
+
+function applyScenario(type){
+  document.querySelectorAll('.wi-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  SUBJECTS.forEach(s=>{
+    if(type==='skip0') simAttend[s.code]=s.remaining;
+    if(type==='skip1') simAttend[s.code]=Math.max(0,s.remaining-1);
+    if(type==='skip2') simAttend[s.code]=Math.max(0,s.remaining-2);
+    if(type==='worst') simAttend[s.code]=Math.max(0,s.remaining-4);
+  });
+  renderSimulator();
+}
+
+function updateOverall(){
+  let totalA=0,totalT=0,totalCanSkip=0,totalMust=0;
+  SUBJECTS.forEach(s=>{
+    totalA+=s.attended; totalT+=s.total;
+    totalCanSkip+=canSkipMore(s);
+    totalMust+=mustAttendMore(s);
+  });
+  const avg = pct(totalA,totalT);
+  document.getElementById('overallPct').textContent=avg+'%';
+  document.getElementById('totalCanSkip').textContent=totalCanSkip;
+  document.getElementById('mustAttend').textContent=totalMust>0?totalMust:'0 ✓';
+
+  const dangerSubjects = SUBJECTS.filter(s=>pct(s.attended,s.total)<75);
+  const warnSubjects = SUBJECTS.filter(s=>{const p=pct(s.attended,s.total);return p>=75&&p<80;});
+
+  if(dangerSubjects.length>0){
+    document.getElementById('overallStatus').textContent='🚨 DANGER';
+    document.getElementById('overallStatus').style.color='var(--red)';
+    document.getElementById('verdictBanner').className='verdict danger';
+    document.getElementById('verdictTitle').textContent=`${dangerSubjects.length} subject${dangerSubjects.length>1?'s are':' is'} below 75% — detention risk.`;
+    document.getElementById('verdictText').innerHTML=`Your <strong>${dangerSubjects.map(s=>s.code).join(', ')} attendance is critically low</strong>. You cannot afford to skip any more classes in ${dangerSubjects.length>1?'these subjects':'this subject'}. Missing exams due to shortage will affect your semester. Take immediate action.`;
+  } else if(warnSubjects.length>0){
+    document.getElementById('overallStatus').textContent='⚠ AT RISK';
+    document.getElementById('overallStatus').style.color='var(--warn)';
+    document.getElementById('verdictBanner').className='verdict warning';
+    document.getElementById('verdictTitle').textContent=`You're borderline. ${warnSubjects.length} subject${warnSubjects.length>1?'s need':'needs'} attention.`;
+    document.getElementById('verdictText').innerHTML=`Your <strong>${warnSubjects.map(s=>s.code).join(', ')} attendance</strong> is in the warning zone. A couple more absences could push you below 75%. Attend consistently for the remaining classes to stay safe.`;
+  } else {
+    document.getElementById('overallStatus').textContent='✓ SAFE';
+    document.getElementById('overallStatus').style.color='var(--success)';
+    document.getElementById('verdictBanner').className='verdict safe';
+    document.getElementById('verdictTitle').textContent='You\'re in a good position across all subjects.';
+    document.getElementById('verdictText').innerHTML=`All your subjects are above 75%. You can safely skip <strong>${totalCanSkip} more classes</strong> in total while still qualifying for exams. Stay consistent and you'll be fine.`;
+  }
+}
+
+// INIT
+renderSubjectCards();
+renderSimulator();
+updateOverall();
+</script>
+
+</body>
+</html>

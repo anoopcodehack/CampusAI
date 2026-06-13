@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+a{color:inherit;text-decoration:none}
+
+/* LEFT */
+.left{background:var(--black);display:flex;flex-direction:column;padding:48px;position:relative;overflow:hidden;border-right:3px solid var(--black)}
+.left::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 28px,rgba(255,255,255,.02) 28px,rgba(255,255,255,.02) 29px);pointer-events:none}
+.left-logo{display:inline-flex;flex-direction:column;border:3px solid var(--white);padding:7px 12px;line-height:1;margin-bottom:auto;text-decoration:none}
+.left-logo span{display:block}
+.ll1{font-size:.85rem;font-weight:900;letter-spacing:3px;color:var(--white)}
+.ll2{font-size:.6rem;font-weight:900;letter-spacing:4px;color:rgba(255,255,255,.4);margin-top:2px}
+.left-content{flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+.left-eyebrow{font-size:.6rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+.left-title{font-size:clamp(2.4rem,4vw,4rem);font-weight:900;line-height:.98;letter-spacing:-2px;color:var(--white);margin-bottom:20px}
+.left-title .lime{color:var(--lime)}
+.left-sub{font-size:.92rem;font-weight:600;color:rgba(255,255,255,.45);line-height:1.7;max-width:380px;margin-bottom:48px}
+.proof-list{display:flex;flex-direction:column;gap:14px}
+.proof-item{display:flex;align-items:center;gap:12px;font-size:.82rem;font-weight:700;color:rgba(255,255,255,.55)}
+.proof-icon{width:32px;height:32px;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.proof-item.highlight .proof-icon{border-color:var(--lime);background:rgba(200,240,0,.08)}
+.proof-item.highlight{color:rgba(255,255,255,.85)}
+.left-bottom{margin-top:auto;padding-top:32px;border-top:1px solid rgba(255,255,255,.08)}
+.left-bottom-text{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.25)}
+
+/* RIGHT */
+.right{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 48px;background:var(--white)}
+.form-box{width:100%;max-width:420px}
+.form-header{margin-bottom:36px}
+.form-eyebrow{font-size:.6rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.form-title{font-size:2rem;font-weight:900;letter-spacing:-1px;color:var(--black);margin-bottom:6px}
+.form-sub{font-size:.85rem;font-weight:600;color:var(--gray)}
+
+/* TABS */
+.role-tabs{display:grid;grid-template-columns:repeat(3,1fr);border:2px solid var(--black);margin-bottom:32px}
+.role-tab{padding:11px;text-align:center;font-size:.72rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;border-right:2px solid var(--black);background:var(--white);transition:all .15s;font-family:var(--font);border-top:none;border-bottom:none;border-left:none}
+.role-tab:last-child{border-right:none}
+.role-tab:hover{background:var(--off-white)}
+.role-tab.active{background:var(--black);color:var(--lime)}
+
+/* FORM FIELDS */
+.field-group{margin-bottom:20px}
+.field-lbl{font-size:.58rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:7px;display:block}
+.field-inp{width:100%;border:2px solid var(--black);padding:13px 14px;font-family:var(--font);font-size:.92rem;font-weight:700;color:var(--black);outline:none;background:var(--white);transition:border-color .2s;border-radius:0}
+.field-inp:focus{border-color:var(--red);background:var(--off-white)}
+.field-inp::placeholder{color:var(--border);font-weight:600}
+.field-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.field-help{font-size:.72rem;font-weight:700;color:var(--gray)}
+.field-link{font-size:.72rem;font-weight:800;color:var(--red)}
+.field-link:hover{text-decoration:underline}
+
+/* SUBMIT */
+.btn-submit{width:100%;background:var(--red);color:var(--white);border:2px solid var(--red);padding:16px;font-family:var(--font);font-size:.88rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin-top:28px;text-decoration:none}
+.btn-submit:hover{background:var(--red-dark);border-color:var(--red-dark)}
+
+/* DEMO BOX */
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--border);font-size:.7rem;font-weight:900;letter-spacing:2px;text-transform:uppercase}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.demo-box{border:2px solid var(--border);padding:16px}
+.demo-box-title{font-size:.58rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.demo-box-title::after{content:'CLICK TO FILL';font-size:.5rem;background:var(--lime);color:var(--black);padding:2px 6px;cursor:pointer}
+.demo-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--light-gray)}
+.demo-row:last-child{border-bottom:none}
+.demo-key{font-size:.78rem;font-weight:700;color:var(--gray)}
+.demo-val{font-size:.82rem;font-weight:900;color:var(--black);cursor:pointer}
+.demo-val:hover{color:var(--red)}
+
+/* BACK LINK */
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:var(--gray);margin-bottom:32px;transition:color .2s}
+.back-link:hover{color:var(--black)}
+
+@media(max-width:768px){
+  body{grid-template-columns:1fr}
+  .left{display:none}
+  .right{padding:40px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- LEFT -->
+<div class="left">
+  <a href="index.html" class="left-logo">
+    <span class="ll1">CAMPUS</span>
+    <span class="ll2">AI PORTAL</span>
+  </a>
+  <div class="left-content">
+    <div class="left-eyebrow">Smart Campus Portal</div>
+    <h1 class="left-title">Your campus.<br><span class="lime">Answered.</span></h1>
+    <p class="left-sub">One platform for attendance, exams, fees, notices — and an AI that knows your college inside out.</p>
+    <div class="proof-list">
+      <div class="proof-item highlight">
+        <div class="proof-icon">🤖</div>
+        AI trained on your college's complete data
+      </div>
+      <div class="proof-item highlight">
+        <div class="proof-icon">⚡</div>
+        Answers in under 3 seconds, 24/7
+      </div>
+      <div class="proof-item">
+        <div class="proof-icon">🔒</div>
+        Secure — your data stays private
+      </div>
+      <div class="proof-item">
+        <div class="proof-icon">📱</div>
+        Works on all devices
+      </div>
+    </div>
+  </div>
+  <div class="left-bottom">
+    <div class="left-bottom-text">CampusAI · Built for WebForge 2026 · IEEE CIS, MUJ</div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+  <div class="form-box">
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <div class="form-header">
+      <div class="form-eyebrow">Student Portal</div>
+      <div class="form-title">Welcome back 👋</div>
+      <div class="form-sub">Sign in to access your CampusAI dashboard</div>
+    </div>
+
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="setTab(this)">Student</button>
+      <button class="role-tab" onclick="setTab(this)">Faculty</button>
+      <button class="role-tab" onclick="setTab(this)">Admin</button>
+    </div>
+
+    <div class="field-group">
+      <label class="field-lbl">Roll Number</label>
+      <input class="field-inp" id="roll" type="text" placeholder="e.g. 4SF23CS021" value="4SF23CS021">
+    </div>
+
+    <div class="field-group">
+      <label class="field-lbl">Password</label>
+      <input class="field-inp" id="pass" type="password" placeholder="Enter your password" value="demo123">
+      <div class="field-row">
+        <span class="field-help">Use your college-issued password</span>
+        <a href="#" class="field-link">Forgot password?</a>
+      </div>
+    </div>
+
+    <a href="dashboard.html" class="btn-submit">
+      Sign In to CampusAI
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+
+    <div class="divider">Demo Credentials</div>
+
+    <div class="demo-box">
+      <div class="demo-box-title">Try the prototype</div>
+      <div class="demo-row">
+        <span class="demo-key">Roll Number</span>
+        <span class="demo-val" onclick="fillDemo()">4SF23CS021</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-key">Password</span>
+        <span class="demo-val" onclick="fillDemo()">demo123</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setTab(el){
+  document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+function fillDemo(){
+  document.getElementById('roll').value='4SF23CS021';
+  document.getElementById('pass').value='demo123';
+}
+</script>
+</body>
+</html>

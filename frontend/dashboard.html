@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:auto 1fr}
+a{color:inherit;text-decoration:none}
+
+/* TOP BAR */
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1;text-decoration:none}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.tb-notif{position:relative;cursor:pointer;font-size:1.1rem;width:36px;height:36px;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.tb-notif:hover{background:var(--black);color:var(--white)}
+.notif-dot{position:absolute;top:-4px;right:-4px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--white)}
+.tb-user{display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 12px;border:2px solid var(--black);transition:background .2s}
+.tb-user:hover{background:var(--black);color:var(--white)}
+.tb-user-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;flex-shrink:0}
+.tb-user:hover .tb-user-avatar{background:var(--red)}
+.tb-user-info{line-height:1.2}
+.tb-user-name{font-size:.82rem;font-weight:900}
+.tb-user-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+.tb-user:hover .tb-user-role{color:rgba(255,255,255,.5)}
+
+/* SIDEBAR */
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04);border-left-color:rgba(255,255,255,.2)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:var(--white);font-size:.52rem;font-weight:900;padding:2px 7px;letter-spacing:1px}
+.nav-badge.lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-avatar{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;flex-shrink:0}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+/* MAIN */
+.main{padding:32px 28px 60px;overflow-y:auto}
+
+/* GREETING BANNER */
+.greeting-banner{background:var(--red);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden}
+.greeting-banner::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 20px,rgba(255,255,255,.03) 20px,rgba(255,255,255,.03) 21px)}
+.gb-left{position:relative;z-index:1}
+.gb-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px;margin-bottom:4px}
+.gb-sub{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.65)}
+.gb-right{display:flex;gap:12px;position:relative;z-index:1}
+.gb-btn{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:10px 18px;border:2px solid;cursor:pointer;font-family:var(--font);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.gb-btn-lime{background:var(--lime);color:var(--black);border-color:var(--lime)}
+.gb-btn-lime:hover{background:var(--lime-dark)}
+.gb-btn-outline{background:transparent;color:var(--white);border-color:rgba(255,255,255,.4)}
+.gb-btn-outline:hover{border-color:var(--white);background:rgba(255,255,255,.1)}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--black);margin-bottom:24px;background:var(--white)}
+.stat-block{padding:22px 20px;border-right:2px solid var(--black);position:relative;background:var(--white)}
+.stat-block:last-child{border-right:none}
+.stat-lbl{font-size:.52rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+.stat-val{font-size:2rem;font-weight:900;line-height:1;color:var(--black)}
+.stat-sub{font-size:.68rem;font-weight:700;color:var(--gray);margin-top:4px}
+.stat-accent{position:absolute;bottom:0;left:0;right:0;height:3px}
+
+/* GRID LAYOUT */
+.content-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+
+/* CARDS */
+.card{background:var(--white);border:2px solid var(--black);margin-bottom:20px}
+.card-header{background:var(--black);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.card-action{font-size:.6rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime);cursor:pointer;text-decoration:none}
+.card-action:hover{color:var(--white)}
+.card-body{padding:20px}
+
+/* TIMETABLE */
+.tt-row{display:grid;grid-template-columns:80px 1fr auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--light-gray)}
+.tt-row:last-child{border-bottom:none}
+.tt-time{font-size:.72rem;font-weight:900;color:var(--gray)}
+.tt-subject{font-size:.88rem;font-weight:900;color:var(--black)}
+.tt-room{font-size:.68rem;font-weight:700;color:var(--gray)}
+.tt-badge{font-size:.55rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border:1.5px solid;display:inline-block}
+.tb-green{background:#f0fff4;color:#15803d;border-color:#86efac}
+.tb-blue{background:#eff6ff;color:#1e40af;border-color:#93c5fd}
+.tb-yellow{background:#fef9c3;color:#92400e;border-color:#fde047}
+.tb-red{background:#fff1f1;color:var(--red);border-color:#fca5a5}
+
+/* NOTICES */
+.notice-item{padding:14px 0;border-bottom:1px solid var(--light-gray);cursor:pointer}
+.notice-item:last-child{border-bottom:none}
+.notice-item:hover .notice-title{color:var(--red)}
+.notice-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.notice-tag{font-size:.52rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px}
+.notice-date{font-size:.65rem;font-weight:700;color:var(--gray)}
+.notice-title{font-size:.88rem;font-weight:900;color:var(--black);margin-bottom:4px;transition:color .2s}
+.notice-ai{background:var(--off-white);border-left:3px solid var(--lime);padding:7px 10px;font-size:.75rem;font-weight:700;color:var(--dark-gray);line-height:1.5;margin-top:6px}
+.notice-ai-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:3px;display:flex;align-items:center;gap:4px}
+
+/* ATTENDANCE BARS */
+.att-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--light-gray)}
+.att-row:last-child{border-bottom:none}
+.att-subject{font-size:.82rem;font-weight:900;color:var(--black);width:100px;flex-shrink:0}
+.att-bar-wrap{flex:1;background:var(--light-gray);height:8px;position:relative}
+.att-bar{height:100%;transition:width .5s ease;position:absolute;left:0;top:0}
+.att-pct{font-size:.75rem;font-weight:900;width:40px;text-align:right;flex-shrink:0}
+.att-status{font-size:.52rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;width:52px;text-align:center;flex-shrink:0}
+
+/* EXAM TRACKER */
+.exam-item{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--light-gray)}
+.exam-item:last-child{border-bottom:none}
+.exam-countdown{width:48px;height:48px;border:2px solid var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;background:var(--off-white)}
+.ec-days{font-size:1.1rem;font-weight:900;line-height:1;color:var(--black)}
+.ec-label{font-size:.45rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--gray)}
+.exam-info{flex:1}
+.exam-subject{font-size:.88rem;font-weight:900;color:var(--black)}
+.exam-detail{font-size:.68rem;font-weight:700;color:var(--gray);margin-top:2px}
+
+/* FEE BLOCK */
+.fee-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--light-gray)}
+.fee-item:last-child{border-bottom:none}
+.fee-name{font-size:.85rem;font-weight:900;color:var(--black)}
+.fee-due{font-size:.68rem;font-weight:700;color:var(--gray);margin-top:2px}
+.fee-amount{font-size:1rem;font-weight:900}
+.fee-amount.due{color:var(--red)}
+.fee-amount.paid{color:var(--success)}
+.fee-total{background:var(--black);margin:0 -20px -20px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.ft-label{font-size:.6rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.ft-amount{font-size:1.3rem;font-weight:900;color:var(--lime)}
+.pay-btn{font-size:.7rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:none;padding:10px 18px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px}
+.pay-btn:hover{background:var(--lime-dark)}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .content-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .stat-block:nth-child(2){border-right:none}
+  .stat-block:nth-child(3){border-top:2px solid var(--black)}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="topbar-right">
+    <div class="tb-notif">
+      🔔
+      <div class="notif-dot"></div>
+    </div>
+    <div class="tb-user">
+      <div class="tb-user-avatar">AK</div>
+      <div class="tb-user-info">
+        <div class="tb-user-name">Anoop K.</div>
+        <div class="tb-user-role">4SF23CS021 · CSE IV</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item active"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance</a>
+    <a href="examtracker.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="timetable.html" class="nav-item"><span class="icon">📚</span> Timetable</a>
+    <a href="studygrp.html" class="nav-item"><span class="icon">💬</span> Study group</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item "><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="fees.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge">DUE</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Info</div>
+    <a href="faculty.html" class="nav-item"><span class="icon">👨‍🏫</span> Faculty Directory</a>
+    <a href="campusmap.html" class="nav-item"><span class="icon">📍</span> Campus Map</a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-avatar">AK</div>
+      <div>
+        <div class="su-name">Anoop K.</div>
+        <div class="su-roll">4SF23CS021</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- GREETING BANNER -->
+  <div class="greeting-banner">
+    <div class="gb-left">
+      <div class="gb-title">Good morning, Anoop 👋</div>
+      <div class="gb-sub">Thursday, June 13, 2026 · IV Semester, CSE · Sahyadri College of Engineering</div>
+    </div>
+    <div class="gb-right">
+      <a href="chat.html" class="gb-btn gb-btn-lime">
+        🤖 Ask CampusAI
+      </a>
+      <a href="noticeboard.html" class="gb-btn gb-btn-outline">
+        📋 View Notices
+      </a>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-block">
+      <div class="stat-lbl">Attendance</div>
+      <div class="stat-val" style="color:var(--success)">87%</div>
+      <div class="stat-sub">3 classes short of 90%</div>
+      <div class="stat-accent" style="background:var(--success)"></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-lbl">Pending Fees</div>
+      <div class="stat-val" style="color:var(--red)">₹4,200</div>
+      <div class="stat-sub">Due June 20, 2026</div>
+      <div class="stat-accent" style="background:var(--red)"></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-lbl">Next Exam</div>
+      <div class="stat-val" style="font-size:1.5rem">CN Lab</div>
+      <div class="stat-sub">Tomorrow · 10:00 AM · Lab 3</div>
+      <div class="stat-accent" style="background:var(--lime)"></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-lbl">Unread Notices</div>
+      <div class="stat-val">3</div>
+      <div class="stat-sub">2 marked urgent</div>
+      <div class="stat-accent" style="background:var(--black)"></div>
+    </div>
+  </div>
+
+  <!-- CONTENT GRID -->
+  <div class="content-grid">
+    <div>
+
+      <!-- TODAY'S TIMETABLE -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Today's Timetable — Thursday</span>
+          <a href="dashboard.html" class="card-action">Full Schedule →</a>
+        </div>
+        <div class="card-body">
+          <div class="tt-row">
+            <div class="tt-time">9:00 AM</div>
+            <div><div class="tt-subject">Computer Networks</div><div class="tt-room">Room 301 · Prof. Sharma</div></div>
+            <span class="tt-badge tb-green">DONE</span>
+          </div>
+          <div class="tt-row">
+            <div class="tt-time">10:00 AM</div>
+            <div><div class="tt-subject">Microprocessors & Embedded Systems</div><div class="tt-room">Room 204 · Prof. Kumar</div></div>
+            <span class="tt-badge tb-blue">NOW</span>
+          </div>
+          <div class="tt-row">
+            <div class="tt-time">11:00 AM</div>
+            <div><div class="tt-subject">Design & Analysis of Algorithms</div><div class="tt-room">Room 301 · Prof. Nair</div></div>
+            <span class="tt-badge tb-yellow">NEXT</span>
+          </div>
+          <div class="tt-row">
+            <div class="tt-time">2:00 PM</div>
+            <div><div class="tt-subject">CN Lab</div><div class="tt-room">Lab 3 · Prof. Sharma</div></div>
+            <span class="tt-badge tb-yellow">LAB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATTENDANCE -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Attendance — This Semester</span>
+          <a href="attendance.html" class="card-action">Details →</a>
+        </div>
+        <div class="card-body">
+          <div class="att-row">
+            <div class="att-subject">CN</div>
+            <div class="att-bar-wrap"><div class="att-bar" style="width:92%;background:var(--success)"></div></div>
+            <div class="att-pct" style="color:var(--success)">92%</div>
+            <span class="att-status" style="background:#f0fff4;color:#15803d;border:1.5px solid #86efac">SAFE</span>
+          </div>
+          <div class="att-row">
+            <div class="att-subject">MES</div>
+            <div class="att-bar-wrap"><div class="att-bar" style="width:87%;background:var(--lime-dark)"></div></div>
+            <div class="att-pct" style="color:var(--lime-dark)">87%</div>
+            <span class="att-status" style="background:#fef9c3;color:#92400e;border:1.5px solid #fde047">OK</span>
+          </div>
+          <div class="att-row">
+            <div class="att-subject">DAA</div>
+            <div class="att-bar-wrap"><div class="att-bar" style="width:74%;background:var(--red)"></div></div>
+            <div class="att-pct" style="color:var(--red)">74%</div>
+            <span class="att-status" style="background:#fff1f1;color:var(--red);border:1.5px solid #fca5a5">LOW</span>
+          </div>
+          <div class="att-row">
+            <div class="att-subject">DBMS</div>
+            <div class="att-bar-wrap"><div class="att-bar" style="width:95%;background:var(--success)"></div></div>
+            <div class="att-pct" style="color:var(--success)">95%</div>
+            <span class="att-status" style="background:#f0fff4;color:#15803d;border:1.5px solid #86efac">SAFE</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+
+      <!-- EXAM TRACKER -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Upcoming Exams</span>
+          <a href="dashboard.html" class="card-action">All →</a>
+        </div>
+        <div class="card-body">
+          <div class="exam-item">
+            <div class="exam-countdown" style="border-color:var(--lime);background:var(--lime)">
+              <div class="ec-days" style="color:var(--black)">1</div>
+              <div class="ec-label" style="color:rgba(0,0,0,.5)">DAY</div>
+            </div>
+            <div class="exam-info">
+              <div class="exam-subject">CN Lab Practical</div>
+              <div class="exam-detail">Jun 14 · 10:00 AM · Lab Block 3</div>
+            </div>
+            <span class="tt-badge tb-red">URGENT</span>
+          </div>
+          <div class="exam-item">
+            <div class="exam-countdown">
+              <div class="ec-days">5</div>
+              <div class="ec-label">DAYS</div>
+            </div>
+            <div class="exam-info">
+              <div class="exam-subject">MES Theory</div>
+              <div class="exam-detail">Jun 18 · 9:00 AM · Hall A</div>
+            </div>
+          </div>
+          <div class="exam-item">
+            <div class="exam-countdown">
+              <div class="ec-days">8</div>
+              <div class="ec-label">DAYS</div>
+            </div>
+            <div class="exam-info">
+              <div class="exam-subject">DAA Theory</div>
+              <div class="exam-detail">Jun 21 · 9:00 AM · Hall B</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEE SUMMARY -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Fee Summary</span>
+          <a href="dashboard.html" class="card-action">History →</a>
+        </div>
+        <div class="card-body" style="padding-bottom:0">
+          <div class="fee-item">
+            <div><div class="fee-name">Tuition Fee</div><div class="fee-due">Due: June 20, 2026</div></div>
+            <div class="fee-amount due">₹3,200</div>
+          </div>
+          <div class="fee-item">
+            <div><div class="fee-name">Library Fee</div><div class="fee-due">Due: June 20, 2026</div></div>
+            <div class="fee-amount due">₹1,000</div>
+          </div>
+          <div class="fee-item">
+            <div><div class="fee-name">Exam Form Fee</div><div class="fee-due">Paid: May 10, 2026</div></div>
+            <div class="fee-amount paid">₹800 ✓</div>
+          </div>
+          <div class="fee-total">
+            <div>
+              <div class="ft-label">Total Pending</div>
+              <div class="ft-amount">₹4,200</div>
+            </div>
+            <button class="pay-btn">Pay Now →</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

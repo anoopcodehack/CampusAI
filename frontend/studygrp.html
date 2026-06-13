@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Groups — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --warn:#f59e0b;--font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+.main{padding:32px 28px 80px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.ph-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.ph-stats{display:flex;gap:0}
+.ph-stat{padding:14px 20px;border-left:2px solid rgba(255,255,255,.1);text-align:center}
+.ph-stat-val{font-size:1.8rem;font-weight:900;color:var(--white);line-height:1}
+.ph-stat-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:3px}
+
+/* STATUS BAR — who's studying now */
+.live-bar{background:var(--lime);border:2px solid var(--black);padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.lb-pulse{width:10px;height:10px;background:var(--black);border-radius:50%;animation:livepulse 1.2s infinite;flex-shrink:0}
+@keyframes livepulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
+.lb-text{font-size:.88rem;font-weight:900;color:var(--black)}
+.lb-avatars{display:flex;gap:-4px;margin-left:auto}
+.lb-avatar{width:28px;height:28px;border:2px solid var(--lime);background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;margin-left:-6px;flex-shrink:0}
+.lb-avatar:first-child{margin-left:0}
+.lb-count{font-size:.72rem;font-weight:900;color:var(--black);margin-left:8px}
+
+/* ANNOUNCE NOW FORM */
+.announce-form{background:var(--white);border:2px solid var(--black);margin-bottom:24px}
+.af-header{background:var(--red);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.af-title{font-size:.62rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.af-badge{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:var(--lime);color:var(--black);padding:3px 9px}
+.af-body{padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end}
+.af-field{display:flex;flex-direction:column;gap:6px}
+.af-label{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray)}
+.af-input{border:2px solid var(--black);padding:11px 13px;font-family:var(--font);font-size:.88rem;font-weight:700;color:var(--black);outline:none;background:var(--white);transition:border-color .2s}
+.af-input:focus{border-color:var(--red);background:var(--off-white)}
+.af-input::placeholder{color:var(--border);font-weight:600}
+select.af-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23111' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.btn-announce{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--black);color:var(--white);border:2px solid var(--black);padding:13px 20px;cursor:pointer;font-family:var(--font);white-space:nowrap;display:flex;align-items:center;gap:7px;transition:all .2s;align-self:end}
+.btn-announce:hover{background:var(--red);border-color:var(--red)}
+
+/* AI MATCH RESULT */
+.ai-match-result{background:var(--white);border:3px solid var(--lime);margin-bottom:24px;display:none;animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.ai-match-result.show{display:block}
+.amr-header{background:var(--lime);padding:13px 20px;display:flex;align-items:center;justify-content:space-between}
+.amr-title{font-size:.62rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--black);display:flex;align-items:center;gap:8px}
+.amr-pulse{width:7px;height:7px;background:var(--black);border-radius:50%;animation:livepulse 1.2s infinite}
+.amr-count{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:var(--black);color:var(--lime);padding:3px 9px}
+.amr-body{padding:20px}
+.amr-desc{font-size:.85rem;font-weight:700;color:var(--dark-gray);margin-bottom:16px;line-height:1.6}
+.amr-desc strong{color:var(--black)}
+.amr-members{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.amr-member{display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid var(--black);background:var(--off-white)}
+.amr-avatar{width:38px;height:38px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;flex-shrink:0}
+.amr-info{flex:1}
+.amr-name{font-size:.88rem;font-weight:900;color:var(--black)}
+.amr-meta{font-size:.65rem;font-weight:700;color:var(--gray);margin-top:2px}
+.amr-match{font-size:.55rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;background:var(--lime);color:var(--black)}
+.amr-actions{display:flex;gap:10px}
+.btn-join-wa{font-size:.75rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:#25d366;color:var(--white);border:2px solid #25d366;padding:12px 22px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-join-wa:hover{background:#1da851}
+.btn-join-group{font-size:.75rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--black);color:var(--white);border:2px solid var(--black);padding:12px 22px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-join-group:hover{background:var(--red);border-color:var(--red)}
+
+/* TABS */
+.tab-bar{display:flex;border:2px solid var(--black);background:var(--white);margin-bottom:20px}
+.tab-btn{flex:1;padding:12px;text-align:center;font-size:.72rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-right:2px solid var(--black);background:var(--white);color:var(--gray);transition:all .15s;font-family:var(--font);border-top:none;border-bottom:none;border-left:none}
+.tab-btn:last-child{border-right:none}
+.tab-btn:hover{background:var(--off-white)}
+.tab-btn.active{background:var(--black);color:var(--lime)}
+
+/* GROUPS GRID */
+.groups-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* GROUP CARD */
+.group-card{background:var(--white);border:2px solid var(--black);transition:all .2s;position:relative}
+.group-card:hover{transform:translateY(-3px);box-shadow:4px 4px 0 var(--black)}
+.group-card.live-group{border-color:var(--success)}
+.group-card.live-group::before{content:'● LIVE NOW';position:absolute;top:-1px;right:-1px;background:var(--success);color:var(--white);font-size:.48rem;font-weight:900;letter-spacing:2px;padding:3px 8px}
+.group-card.full-group{opacity:.65}
+.gc-header{padding:14px 18px;border-bottom:2px solid var(--black);display:flex;align-items:center;justify-content:space-between}
+.gc-subject{font-size:.95rem;font-weight:900;color:var(--black)}
+.gc-code{font-size:.6rem;font-weight:700;color:var(--gray);margin-top:2px}
+.gc-subject-badge{font-size:.55rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border:2px solid var(--black)}
+.gc-body{padding:16px 18px}
+.gc-members-row{display:flex;align-items:center;gap:-4px;margin-bottom:12px}
+.gc-member-av{width:32px;height:32px;border:2px solid var(--white);background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;margin-left:-8px;flex-shrink:0}
+.gc-member-av:first-child{margin-left:0}
+.gc-member-av.more{background:var(--off-white);color:var(--gray);border-color:var(--border)}
+.gc-info-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.gc-info-row{display:flex;align-items:center;gap:8px;font-size:.75rem;font-weight:700;color:var(--dark-gray)}
+.gc-ai-note{border-left:3px solid var(--lime);background:var(--off-white);padding:9px 12px;font-size:.75rem;font-weight:700;color:var(--dark-gray);line-height:1.5}
+.gc-ai-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:3px}
+.gc-footer{padding:12px 18px;border-top:2px solid var(--black);display:flex;gap:8px}
+.gc-btn{font-size:.62rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border:2px solid;cursor:pointer;font-family:var(--font);transition:all .15s;flex:1;text-align:center}
+.gc-btn-black{background:var(--black);color:var(--white);border-color:var(--black)}
+.gc-btn-black:hover{background:var(--red);border-color:var(--red)}
+.gc-btn-lime{background:var(--lime);color:var(--black);border-color:var(--lime)}
+.gc-btn-lime:hover{background:var(--lime-dark);border-color:var(--lime-dark)}
+.gc-btn-outline{background:var(--white);color:var(--black);border-color:var(--black)}
+.gc-btn-outline:hover{background:var(--off-white)}
+.gc-btn-wa{background:#25d366;color:var(--white);border-color:#25d366}
+.gc-btn-wa:hover{background:#1da851}
+.gc-capacity{font-size:.7rem;font-weight:900;display:flex;align-items:center;gap:4px}
+.cap-bar-wrap{flex:1;height:6px;background:var(--light-gray);border:1.5px solid var(--border)}
+.cap-bar{height:100%}
+
+/* MY GROUP STATUS */
+.my-status{background:var(--black);border:2px solid var(--black);padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.ms-text{font-size:.88rem;font-weight:900;color:var(--white)}
+.ms-sub{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:3px}
+.ms-badge{background:var(--lime);color:var(--black);font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;flex-shrink:0}
+
+/* SCANNING ANIM */
+.scanning{background:var(--black);border:2px solid var(--black);padding:14px 20px;margin-bottom:16px;display:none;align-items:center;gap:14px}
+.scanning.show{display:flex}
+.scan-dots{display:flex;gap:4px}
+.scan-dots span{width:6px;height:6px;background:var(--lime);border-radius:50%;animation:sbounce .8s infinite}
+.scan-dots span:nth-child(2){animation-delay:.15s}
+.scan-dots span:nth-child(3){animation-delay:.3s}
+@keyframes sbounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.scan-text{font-size:.78rem;font-weight:800;color:var(--white)}
+.scan-text span{color:var(--lime)}
+.scan-prog{flex:1;height:4px;background:rgba(255,255,255,.1);overflow:hidden}
+.scan-prog-bar{height:100%;background:var(--lime);animation:scanprog 2s ease infinite}
+@keyframes scanprog{0%{width:0;margin-left:0}60%{width:60%}100%{width:0;margin-left:100%}}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);font-size:.82rem;font-weight:900;padding:14px 28px;border:2px solid rgba(255,255,255,.15);z-index:999;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1000px){.groups-grid{grid-template-columns:1fr}}
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .af-body{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div><div class="tb-name">Anoop K.</div><div class="tb-role">4SF23CS021 · CSE IV</div></div>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="examtracker.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="timetable.html" class="nav-item"><span class="icon">📚</span> Timetable</a>
+    <a href="studygroups.html" class="nav-item active"><span class="icon">👥</span> Study Groups <span class="nav-badge nb-lime">AI</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item"><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+    <a href="faculty.html" class="nav-item"><span class="icon">👨‍🏫</span> Faculty Directory</a>
+    <a href="campusmap.html" class="nav-item"><span class="icon">📍</span> Campus Map</a>
+    
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="fees.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div><div class="su-name">Anoop K.</div><div class="su-roll">4SF23CS021</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">✦ AI-POWERED MATCHING</div>
+        <div class="ph-title">Study Group Finder</div>
+        <div class="ph-sub">Tell CampusAI what you're studying — it instantly finds batchmates studying the same thing and connects you.</div>
+      </div>
+      <div class="ph-stats">
+        <div class="ph-stat"><div class="ph-stat-val" style="color:var(--lime)" id="activeCount">14</div><div class="ph-stat-label">Studying Now</div></div>
+        <div class="ph-stat"><div class="ph-stat-val">6</div><div class="ph-stat-label">Live Groups</div></div>
+        <div class="ph-stat"><div class="ph-stat-val">94%</div><div class="ph-stat-label">Match Rate</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE BAR -->
+  <div class="live-bar">
+    <div class="lb-pulse"></div>
+    <div class="lb-text">14 CSE IV students are studying right now — find your group!</div>
+    <div class="lb-avatars" id="liveAvatars">
+      <div class="lb-avatar">NK</div>
+      <div class="lb-avatar">SR</div>
+      <div class="lb-avatar">KP</div>
+      <div class="lb-avatar">DT</div>
+      <div class="lb-avatar">RM</div>
+    </div>
+    <span class="lb-count">+9 more</span>
+  </div>
+
+  <!-- MY STATUS -->
+  <div class="my-status" id="myStatus">
+    <div>
+      <div class="ms-text">📚 You're not in any study session right now.</div>
+      <div class="ms-sub">Announce what you're studying — AI will find matching batchmates instantly.</div>
+    </div>
+    <span class="ms-badge">NOT STUDYING</span>
+  </div>
+
+  <!-- ANNOUNCE FORM -->
+  <div class="announce-form">
+    <div class="af-header">
+      <span class="af-title">📢 Announce Your Study Session</span>
+      <span class="af-badge">AI WILL MATCH YOU</span>
+    </div>
+    <div class="af-body">
+      <div class="af-field">
+        <label class="af-label">Subject</label>
+        <select class="af-input" id="studySubject">
+          <option value="">Select subject...</option>
+          <option value="CN">Computer Networks (CN)</option>
+          <option value="MES">Microprocessors (MES)</option>
+          <option value="DAA">DAA — Algorithms</option>
+          <option value="DBMS">Database Management</option>
+          <option value="SE">Software Engineering</option>
+          <option value="MATH">Engineering Maths</option>
+        </select>
+      </div>
+      <div class="af-field">
+        <label class="af-label">Topic</label>
+        <input class="af-input" id="studyTopic" type="text" placeholder="e.g. Socket programming, NP-Complete...">
+      </div>
+      <div class="af-field">
+        <label class="af-label">Location</label>
+        <select class="af-input" id="studyLocation">
+          <option value="">Where?</option>
+          <option>Library — Reading Room</option>
+          <option>CSE Block — Room 301</option>
+          <option>Hostel A — Common Room</option>
+          <option>Hostel B — Study Hall</option>
+          <option>Canteen Area</option>
+          <option>Online (Google Meet)</option>
+        </select>
+      </div>
+      <div class="af-field">
+        <label class="af-label">Duration</label>
+        <select class="af-input" id="studyDuration">
+          <option>1 hour</option>
+          <option>2 hours</option>
+          <option selected>3 hours</option>
+          <option>Till midnight</option>
+        </select>
+      </div>
+      <button class="btn-announce" onclick="announceSession()">
+        ✦ Find My Group
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- SCANNING -->
+  <div class="scanning" id="scanningBar">
+    <div class="scan-dots"><span></span><span></span><span></span></div>
+    <div class="scan-text">CampusAI is <span>scanning 14 active students for matches...</span></div>
+    <div class="scan-prog"><div class="scan-prog-bar"></div></div>
+  </div>
+
+  <!-- AI MATCH RESULT -->
+  <div class="ai-match-result" id="matchResult">
+    <div class="amr-header">
+      <div class="amr-title"><div class="amr-pulse"></div>✦ CAMPUSAI FOUND YOUR STUDY GROUP</div>
+      <span class="amr-count" id="matchCountBadge">3 MATCHES</span>
+    </div>
+    <div class="amr-body">
+      <div class="amr-desc" id="matchDesc">3 batchmates are studying <strong>CN — Socket Programming</strong> right now at the <strong>Library Reading Room</strong>. CampusAI has notified them that you want to join.</div>
+      <div class="amr-members" id="matchMembers"></div>
+      <div class="amr-actions">
+        <button class="btn-join-wa" onclick="showToast('📱 Opening WhatsApp group link...')">
+          💬 Join WhatsApp Group
+        </button>
+        <button class="btn-join-group" onclick="joinGroup()">
+          ✓ Join Study Session
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-live" onclick="setTab('live')">🟢 Live Sessions <span id="liveTabCount">(6)</span></button>
+    <button class="tab-btn" id="tab-upcoming" onclick="setTab('upcoming')">🕐 Upcoming <span>(3)</span></button>
+    <button class="tab-btn" id="tab-mygroups" onclick="setTab('mygroups')">👤 My Groups <span>(2)</span></button>
+  </div>
+
+  <!-- GROUPS GRID -->
+  <div class="groups-grid" id="groupsGrid"></div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GROUPS = [
+  {
+    id:1, subject:'Computer Networks', code:'CN', topic:'Socket Programming + Wireshark',
+    location:'Library — Reading Room', time:'Now', duration:'2 hrs left',
+    members:['NK','SR','KP'], maxMembers:6, currentCount:3,
+    live:true, full:false, tab:'live',
+    aiNote:'Exam tomorrow! This group is focusing on lab practical prep — exactly what you need.',
+    color:'#6366f1', joined:false
+  },
+  {
+    id:2, subject:'DAA — Algorithms', code:'DAA', topic:'NP-Completeness + Backtracking',
+    location:'CSE Block — Room 301', time:'Now', duration:'3 hrs left',
+    members:['DT','RM','AV','PK'], maxMembers:5, currentCount:4,
+    live:true, full:false, tab:'live',
+    aiNote:'DAA exam in 8 days. This group covers the highest-weightage topics. Join now.',
+    color:'#f59e0b', joined:false
+  },
+  {
+    id:3, subject:'Microprocessors', code:'MES', topic:'8086 Architecture + Interrupts',
+    location:'Hostel A — Common Room', time:'Now', duration:'1 hr left',
+    members:['SJ','TK','MR','RV','LP'], maxMembers:5, currentCount:5,
+    live:true, full:true, tab:'live',
+    aiNote:'This group is full. You can request to join or start a new MES session.',
+    color:'#e5473b', joined:false
+  },
+  {
+    id:4, subject:'DBMS', code:'DBMS', topic:'SQL Joins + Normalization Practice',
+    location:'Library — Reading Room', time:'Now', duration:'2 hrs left',
+    members:['VN','AP'], maxMembers:6, currentCount:2,
+    live:true, full:false, tab:'live',
+    aiNote:'Only 2 members — good for focused study. DBMS exam in 11 days.',
+    color:'#22c55e', joined:false
+  },
+  {
+    id:5, subject:'Computer Networks', code:'CN', topic:'Routing Protocols — RIP & OSPF',
+    location:'Online (Google Meet)', time:'Now', duration:'4 hrs left',
+    members:['BK','SK','NM'], maxMembers:8, currentCount:3,
+    live:true, full:false, tab:'live',
+    aiNote:'Online group — join from anywhere. Perfect if you\'re in hostel.',
+    color:'#6366f1', joined:false
+  },
+  {
+    id:6, subject:'Engineering Maths', code:'MATH', topic:'Numerical Methods + Integration',
+    location:'Canteen Area', time:'Now', duration:'1.5 hrs left',
+    members:['RK','MS'], maxMembers:6, currentCount:2,
+    live:true, full:false, tab:'live',
+    aiNote:'Casual study session at canteen — relaxed environment, good for revision.',
+    color:'#06b6d4', joined:false
+  },
+  {
+    id:7, subject:'DAA — Algorithms', code:'DAA', topic:'Dynamic Programming — DP Problems',
+    location:'CSE Block — Room 302', time:'Tonight 8 PM', duration:'2 hours',
+    members:['AK','VR'], maxMembers:6, currentCount:2,
+    live:false, full:false, tab:'upcoming',
+    aiNote:'Scheduled for tonight — perfect post-dinner study slot. 4 spots left.',
+    color:'#f59e0b', joined:false
+  },
+  {
+    id:8, subject:'DBMS', code:'DBMS', topic:'Transaction Management + ACID',
+    location:'Library — Reading Room', time:'Tomorrow 9 AM', duration:'3 hours',
+    members:['PR','SK','NL','DM'], maxMembers:6, currentCount:4,
+    live:false, full:false, tab:'upcoming',
+    aiNote:'Morning session before classes — 2 spots left. Good time for DBMS before exam.',
+    color:'#22c55e', joined:false
+  },
+  {
+    id:9, subject:'Microprocessors', code:'MES', topic:'LPC2148 + ARM7 Full Revision',
+    location:'Hostel B — Study Hall', time:'Tomorrow 7 PM', duration:'3 hours',
+    members:['FT','RN'], maxMembers:5, currentCount:2,
+    live:false, full:false, tab:'upcoming',
+    aiNote:'MES exam in 5 days — this group plans a full subject revision. Join early.',
+    color:'#e5473b', joined:true
+  },
+];
+
+let activeTab = 'live';
+
+function renderGroups() {
+  const grid = document.getElementById('groupsGrid');
+  const filtered = GROUPS.filter(g => g.tab === activeTab);
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);font-weight:800">No groups in this category yet.</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(g => {
+    const capPct = Math.round((g.currentCount / g.maxMembers) * 100);
+    const capColor = capPct >= 100 ? 'var(--red)' : capPct >= 70 ? 'var(--warn)' : 'var(--success)';
+    const membersHTML = g.members.slice(0, 4).map(m =>
+      `<div class="gc-member-av">${m}</div>`
+    ).join('') + (g.members.length > 4 ? `<div class="gc-member-av more">+${g.members.length - 4}</div>` : '');
+
+    return `
+    <div class="group-card ${g.live ? 'live-group' : ''} ${g.full ? 'full-group' : ''}">
+      <div class="gc-header">
+        <div>
+          <div class="gc-subject">${g.subject}</div>
+          <div class="gc-code">${g.code} · ${g.topic}</div>
+        </div>
+        <span class="gc-subject-badge" style="background:${g.color};color:white;border-color:${g.color}">${g.code}</span>
+      </div>
+      <div class="gc-body">
+        <div class="gc-members-row">${membersHTML}</div>
+        <div class="gc-info-rows">
+          <div class="gc-info-row">📍 ${g.location}</div>
+          <div class="gc-info-row">🕐 ${g.time} · ${g.duration}</div>
+          <div class="gc-info-row">
+            <div class="gc-capacity">
+              <span>${g.currentCount}/${g.maxMembers}</span>
+              <div class="cap-bar-wrap"><div class="cap-bar" style="width:${capPct}%;background:${capColor}"></div></div>
+              <span style="color:${capColor}">${g.full ? 'FULL' : g.maxMembers - g.currentCount + ' spots left'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="gc-ai-note">
+          <div class="gc-ai-label">✦ AI TIP</div>
+          ${g.aiNote}
+        </div>
+      </div>
+      <div class="gc-footer">
+        ${g.joined
+          ? `<button class="gc-btn gc-btn-lime" disabled>✓ Joined</button>
+             <button class="gc-btn gc-btn-wa" onclick="showToast('💬 Opening WhatsApp group...')">WhatsApp</button>`
+          : g.full
+          ? `<button class="gc-btn gc-btn-outline" onclick="showToast('📩 Join request sent! You\\'ll be notified when a spot opens.')">Request to Join</button>`
+          : `<button class="gc-btn gc-btn-black" onclick="joinGroupById(${g.id})">Join Group</button>
+             <button class="gc-btn gc-btn-wa" onclick="showToast('💬 WhatsApp group link copied!')">WhatsApp</button>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  renderGroups();
+}
+
+function announceSession() {
+  const subject = document.getElementById('studySubject').value;
+  const topic = document.getElementById('studyTopic').value;
+  const location = document.getElementById('studyLocation').value;
+  if (!subject || !location) { showToast('⚠ Fill in subject and location!'); return; }
+
+  // Show scanning
+  document.getElementById('scanningBar').classList.add('show');
+  document.getElementById('matchResult').classList.remove('show');
+
+  setTimeout(() => {
+    document.getElementById('scanningBar').classList.remove('show');
+
+    // Find matches
+    const matches = GROUPS.filter(g => g.code === subject && !g.full && g.tab === 'live');
+    const matchCount = matches.length > 0 ? matches[0].currentCount : 2;
+    const matchNames = matches.length > 0 ? matches[0].members : ['NK', 'SR'];
+    const matchLoc = matches.length > 0 ? matches[0].location : location;
+    const topicText = topic || subject + ' revision';
+
+    document.getElementById('matchCountBadge').textContent = matchCount + ' MATCHES';
+    document.getElementById('matchDesc').innerHTML = `<strong>${matchCount} batchmates</strong> are studying <strong>${subject} — ${topicText}</strong> right now at <strong>${matchLoc}</strong>. CampusAI has notified them you want to join!`;
+    document.getElementById('matchMembers').innerHTML = matchNames.map(m => `
+      <div class="amr-member">
+        <div class="amr-avatar">${m}</div>
+        <div class="amr-info">
+          <div class="amr-name">${getFullName(m)}</div>
+          <div class="amr-meta">CSE IV · ${matchLoc} · Studying ${subject}</div>
+        </div>
+        <span class="amr-match">MATCH ✓</span>
+      </div>`).join('');
+
+    document.getElementById('matchResult').classList.add('show');
+
+    // Update my status
+    document.getElementById('myStatus').innerHTML = `
+      <div>
+        <div class="ms-text">📚 You're now studying ${subject} — ${topicText}</div>
+        <div class="ms-sub">📍 ${matchLoc} · ${document.getElementById('studyDuration').value} · CampusAI matched you with ${matchCount} batchmates</div>
+      </div>
+      <span class="ms-badge" style="background:var(--success);color:white">● LIVE NOW</span>`;
+
+    showToast('✦ Found ' + matchCount + ' matches! Notifying your batchmates...');
+  }, 2500);
+}
+
+function joinGroup() {
+  document.getElementById('matchResult').classList.remove('show');
+  showToast('✅ You joined the group! Check WhatsApp for the group link.');
+}
+
+function joinGroupById(id) {
+  const g = GROUPS.find(g => g.id === id);
+  if (g) {
+    g.joined = true;
+    g.currentCount++;
+    renderGroups();
+    showToast('✅ Joined "' + g.subject + '" group! WhatsApp link sent to your number.');
+  }
+}
+
+function getFullName(init) {
+  const names = {
+    'NK':'Nithiesh Kumar', 'SR':'Sneha Rao', 'KP':'Kiran Patel',
+    'DT':'Diya Thomas', 'RM':'Rahul Menon', 'AV':'Ananya V.',
+    'PK':'Priya Krishnan', 'SJ':'Sanjay J.', 'TK':'Tejas K.',
+    'BK':'Bhavna K.', 'SK':'Suraj Kumar'
+  };
+  return names[init] || init + '. (CSE IV)';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Simulate live count changing
+setInterval(() => {
+  const count = 12 + Math.floor(Math.random() * 6);
+  document.getElementById('activeCount').textContent = count;
+}, 5000);
+
+renderGroups();
+</script>
+</body>
+</html>

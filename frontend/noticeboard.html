@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notice Board — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+/* TOP BAR */
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+/* SIDEBAR */
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:var(--white);font-size:.52rem;font-weight:900;padding:2px 7px}
+.nav-badge.lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-avatar{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+/* MAIN */
+.main{padding:32px 28px 60px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-title{font-size:1.6rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:3px}
+.ai-summarize-btn{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--lime);color:var(--black);border:2px solid var(--lime);padding:11px 20px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.ai-summarize-btn:hover{background:var(--lime-dark);border-color:var(--lime-dark)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:0;border:2px solid var(--black);background:var(--white);margin-bottom:24px;flex-wrap:wrap}
+.filter-btn{padding:10px 18px;font-size:.7rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-right:2px solid var(--black);background:var(--white);color:var(--dark-gray);transition:all .15s;font-family:var(--font);border-top:none;border-bottom:none;border-left:none}
+.filter-btn:last-child{border-right:none}
+.filter-btn:hover{background:var(--off-white)}
+.filter-btn.active{background:var(--black);color:var(--lime)}
+.filter-count{background:var(--red);color:var(--white);font-size:.5rem;font-weight:900;padding:1px 5px;margin-left:5px;display:inline-block}
+.filter-count.lime{background:var(--lime);color:var(--black)}
+
+/* NOTICES GRID */
+.notices-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* NOTICE CARD */
+.notice-card{background:var(--white);border:2px solid var(--black);transition:all .2s;cursor:pointer}
+.notice-card:hover{transform:translateY(-2px);box-shadow:4px 4px 0 var(--black)}
+.notice-card.urgent{border-color:var(--red)}
+.notice-card.urgent .nc-header{background:var(--red)}
+.nc-header{background:var(--black);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.nc-tag{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;display:inline-block}
+.nc-date{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.4)}
+.nc-body{padding:18px}
+.nc-title{font-size:.95rem;font-weight:900;color:var(--black);line-height:1.3;margin-bottom:8px}
+.nc-original{font-size:.78rem;font-weight:600;color:var(--gray);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* AI SUMMARY BLOCK */
+.ai-summary{background:var(--off-white);border:2px solid var(--lime);padding:12px 14px;margin-top:4px}
+.ai-summary-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.ai-summary-label .dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ai-summary-text{font-size:.82rem;font-weight:700;color:var(--dark-gray);line-height:1.6}
+.ai-summary-text strong{color:var(--black)}
+
+/* EXPAND BUTTON */
+.nc-expand{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-top:1px solid var(--light-gray);font-size:.65rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);cursor:pointer;transition:all .2s;background:var(--white)}
+.nc-expand:hover{background:var(--off-white);color:var(--black)}
+.nc-full{display:none;padding:0 18px 18px;font-size:.82rem;font-weight:600;color:var(--dark-gray);line-height:1.7;border-top:1px solid var(--light-gray);padding-top:14px}
+.nc-full.open{display:block}
+
+/* URGENT BANNER */
+.urgent-banner{background:var(--red);border:2px solid var(--black);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.ub-icon{font-size:1.4rem}
+.ub-text{font-size:.88rem;font-weight:900;color:var(--white)}
+.ub-sub{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);margin-top:2px}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .notices-grid{grid-template-columns:1fr}
+  .topbar{grid-column:1}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div>
+      <div class="tb-name">Anoop K.</div>
+      <div class="tb-role">4SF23CS021 · CSE IV</div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item active"><span class="icon">📋</span> Notice Board <span class="nav-badge">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">📊</span> Attendance</a>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-avatar">AK</div>
+      <div>
+        <div class="su-name">Anoop K.</div>
+        <div class="su-roll">4SF23CS021</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="page-header">
+    <div>
+      <div class="ph-title">Notice Board 📋</div>
+      <div class="ph-sub">All circulars auto-summarized by CampusAI · Updated: June 13, 2026</div>
+    </div>
+    <button class="ai-summarize-btn" onclick="summarizeAll()">
+      ✦ Summarize All with AI
+    </button>
+  </div>
+
+  <!-- URGENT BANNER -->
+  <div class="urgent-banner">
+    <div class="ub-icon">⚠️</div>
+    <div>
+      <div class="ub-text">2 urgent notices require your attention</div>
+      <div class="ub-sub">Fee deadline and exam hall ticket download — action required before June 20</div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter(this,'all')">All <span class="filter-count lime">8</span></button>
+    <button class="filter-btn" onclick="setFilter(this,'urgent')">Urgent <span class="filter-count">2</span></button>
+    <button class="filter-btn" onclick="setFilter(this,'exam')">Exams</button>
+    <button class="filter-btn" onclick="setFilter(this,'fees')">Fees</button>
+    <button class="filter-btn" onclick="setFilter(this,'general')">General</button>
+    <button class="filter-btn" onclick="setFilter(this,'hostel')">Hostel</button>
+  </div>
+
+  <!-- NOTICES GRID -->
+  <div class="notices-grid">
+
+    <!-- NOTICE 1 — URGENT -->
+    <div class="notice-card urgent">
+      <div class="nc-header">
+        <span class="nc-tag" style="background:var(--white);color:var(--red)">⚠ URGENT · FEES</span>
+        <span class="nc-date">June 10, 2026</span>
+      </div>
+      <div class="nc-body">
+        <div class="nc-title">Last Date for Semester Fee Payment — IV Semester 2025–26</div>
+        <div class="nc-original">This is to notify all students of the IV semester that the last date for payment of tuition fee, library fee, and other mandatory charges for the academic year 2025–26 (even semester) is hereby fixed as 20th June 2026. Students who fail to remit the fees within the stipulated time shall be liable to pay a late fee...</div>
+        <div class="ai-summary">
+          <div class="ai-summary-label"><div class="dot"></div>AI Summary</div>
+          <div class="ai-summary-text">Pay all semester fees by <strong>June 20, 2026</strong>. Late fee of ₹500 applies after deadline. Pay online via portal or at accounts office (Mon–Fri, 10am–3pm).</div>
+        </div>
+      </div>
+      <div class="nc-expand" onclick="toggleExpand(this)">
+        Read full circular <span>↓</span>
+      </div>
+      <div class="nc-full">
+        This is to notify all students of the IV semester that the last date for payment of tuition fee, library fee, laboratory fee, and all other mandatory charges for the academic year 2025–26 (even semester) is hereby fixed as <strong>20th June 2026</strong>.
+        <br><br>
+        Students who fail to remit the fees within the stipulated time shall be liable to pay a late fee of ₹500 per week. Students with fee dues beyond July 10, 2026 shall not be permitted to appear for the university examinations.
+        <br><br>
+        For queries, contact the Accounts Office at accounts@sahyadri.edu.in or call extension 2201.
+      </div>
+    </div>
+
+    <!-- NOTICE 2 — URGENT -->
+    <div class="notice-card urgent">
+      <div class="nc-header">
+        <span class="nc-tag" style="background:var(--white);color:var(--red)">⚠ URGENT · EXAM</span>
+        <span class="nc-date">June 11, 2026</span>
+      </div>
+      <div class="nc-body">
+        <div class="nc-title">IV Semester Hall Ticket Download — VTU June 2026</div>
+        <div class="nc-original">Students appearing for VTU IV semester examinations (June 2026) are hereby informed that the hall tickets are now available for download from the student portal. Students must download and take a printout of the hall ticket before the examination date. Entry to the examination hall without hall ticket will not be permitted under any circumstances...</div>
+        <div class="ai-summary">
+          <div class="ai-summary-label"><div class="dot"></div>AI Summary</div>
+          <div class="ai-summary-text">Download your hall ticket from the student portal now. <strong>No hall ticket = no entry to exam.</strong> Exams start June 18, 2026.</div>
+        </div>
+      </div>
+      <div class="nc-expand" onclick="toggleExpand(this)">
+        Read full circular <span>↓</span>
+      </div>
+      <div class="nc-full">
+        Students appearing for VTU IV semester examinations are hereby informed that hall tickets for June 2026 examinations are now available for download from the student portal.
+        <br><br>
+        Steps to download: Login → Examinations → Hall Ticket → Download PDF. Students must print and bring a copy to each examination. Entry without hall ticket will not be permitted. Contact the exam section (Room 102, Admin Block) for discrepancies.
+      </div>
+    </div>
+
+    <!-- NOTICE 3 -->
+    <div class="notice-card">
+      <div class="nc-header">
+        <span class="nc-tag" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)">GENERAL</span>
+        <span class="nc-date">June 8, 2026</span>
+      </div>
+      <div class="nc-body">
+        <div class="nc-title">College Annual Day Celebrations — June 28, 2026</div>
+        <div class="nc-original">The management is pleased to announce the Annual Day Celebrations for the academic year 2025–26 to be held on Saturday, June 28, 2026. All students are requested to participate in the cultural events. Registration for cultural performances is open from June 13 to June 18...</div>
+        <div class="ai-summary">
+          <div class="ai-summary-label"><div class="dot"></div>AI Summary</div>
+          <div class="ai-summary-text">Annual Day on <strong>June 28, 2026</strong>. Register for cultural events Jun 13–18 at the student activity centre. Attendance mandatory for all.</div>
+        </div>
+      </div>
+      <div class="nc-expand" onclick="toggleExpand(this)">Read full circular <span>↓</span></div>
+      <div class="nc-full">Annual Day 2025–26 is on June 28. All students must attend. Cultural event registrations open June 13–18 at the Student Activity Centre, Ground Floor, Main Block. Contact cultural committee head for details.</div>
+    </div>
+
+    <!-- NOTICE 4 -->
+    <div class="notice-card">
+      <div class="nc-header">
+        <span class="nc-tag" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)">HOSTEL</span>
+        <span class="nc-date">June 5, 2026</span>
+      </div>
+      <div class="nc-body">
+        <div class="nc-title">Revised Hostel Entry Timings — Exam Period</div>
+        <div class="nc-original">In view of the upcoming semester examinations, the hostel warden hereby notifies all resident students that the hostel entry timings shall be revised during the examination period. Strict compliance is expected from all students. Violations will be dealt with as per the hostel rules and regulations...</div>
+        <div class="ai-summary">
+          <div class="ai-summary-label"><div class="dot"></div>AI Summary</div>
+          <div class="ai-summary-text">Exam period hostel timings: entry closes at <strong>10:30 PM</strong> (extended by 30 mins). Gate passes mandatory for outings. Valid June 13–July 5.</div>
+        </div>
+      </div>
+      <div class="nc-expand" onclick="toggleExpand(this)">Read full circular <span>↓</span></div>
+      <div class="nc-full">During examination period (June 13 – July 5, 2026), hostel entry is extended to 10:30 PM. All outings require a gate pass signed by the warden. No overnight leaves without prior written approval from parent/guardian and warden.</div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+function setFilter(el, filter){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function toggleExpand(btn){
+  const full = btn.nextElementSibling;
+  const arrow = btn.querySelector('span');
+  full.classList.toggle('open');
+  arrow.textContent = full.classList.contains('open') ? '↑' : '↓';
+  btn.style.color = full.classList.contains('open') ? 'var(--black)' : '';
+}
+function summarizeAll(){
+  alert('✦ AI Summary: All 8 notices summarized. 2 require urgent action: (1) Pay fees by June 20. (2) Download hall ticket before June 18 exams. Annual Day on June 28 — register June 13–18.');
+}
+</script>
+
+</body>
+</html>

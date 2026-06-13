@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculty Directory — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+.main{padding:32px 28px 80px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.ph-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.ph-stats{display:flex;gap:0}
+.ph-stat{padding:14px 20px;border-left:2px solid rgba(255,255,255,.1);text-align:center}
+.ph-stat-val{font-size:1.6rem;font-weight:900;color:var(--white);line-height:1}
+.ph-stat-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:3px}
+
+/* AI SEARCH BAR */
+.search-bar{border:2px solid var(--black);background:var(--white);display:flex;margin-bottom:24px}
+.search-icon{width:56px;background:var(--black);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border-right:2px solid var(--black)}
+.search-input{flex:1;border:none;padding:14px 18px;font-family:var(--font);font-size:.95rem;font-weight:700;color:var(--black);outline:none;background:var(--white)}
+.search-input::placeholder{color:var(--border);font-weight:600}
+.search-btn{background:var(--red);color:var(--white);border:none;border-left:2px solid var(--black);padding:14px 24px;cursor:pointer;font-family:var(--font);font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;transition:background .2s;flex-shrink:0}
+.search-btn:hover{background:var(--red-dark)}
+.search-ai-label{background:var(--lime);color:var(--black);font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:0 12px;display:flex;align-items:center;gap:5px;border-left:2px solid var(--black);flex-shrink:0}
+
+/* DEPT FILTER */
+.dept-filter{display:flex;gap:0;border:2px solid var(--black);background:var(--white);margin-bottom:24px;flex-wrap:wrap}
+.dept-btn{padding:10px 16px;font-size:.68rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-right:2px solid var(--black);background:var(--white);color:var(--gray);transition:all .15s;font-family:var(--font);border-top:none;border-bottom:none;border-left:none}
+.dept-btn:last-child{border-right:none}
+.dept-btn:hover{background:var(--off-white)}
+.dept-btn.active{background:var(--black);color:var(--lime)}
+
+/* AI RESULT BANNER */
+.ai-result{background:var(--white);border:2px solid var(--lime);margin-bottom:20px;display:none}
+.ai-result.show{display:block}
+.ai-result-header{background:var(--lime);padding:10px 18px;display:flex;align-items:center;gap:8px}
+.ai-result-label{font-size:.58rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--black)}
+.ai-result-body{padding:16px 18px;font-size:.88rem;font-weight:700;color:var(--dark-gray);line-height:1.65}
+.ai-result-body strong{color:var(--black)}
+
+/* FACULTY GRID */
+.faculty-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+
+/* FACULTY CARD */
+.faculty-card{background:var(--white);border:2px solid var(--black);transition:all .2s;cursor:pointer}
+.faculty-card:hover{transform:translateY(-3px);box-shadow:4px 4px 0 var(--black)}
+.faculty-card.hod-card{border-color:var(--red)}
+.fc-header{padding:20px 18px;border-bottom:2px solid var(--black);display:flex;align-items:center;gap:14px}
+.fc-avatar{width:52px;height:52px;border:2px solid var(--black);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;flex-shrink:0}
+.fc-name{font-size:.95rem;font-weight:900;color:var(--black);margin-bottom:3px}
+.fc-designation{font-size:.65rem;font-weight:700;color:var(--gray)}
+.fc-badge{font-size:.52rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;display:inline-block;margin-top:5px}
+.hod-badge{background:var(--red);color:var(--white)}
+.prof-badge{background:var(--black);color:var(--white)}
+.asst-badge{background:var(--off-white);color:var(--dark-gray);border:1.5px solid var(--border)}
+.fc-body{padding:16px 18px}
+.fc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.78rem;font-weight:700;color:var(--dark-gray)}
+.fc-row:last-child{margin-bottom:0}
+.fc-row-icon{font-size:.85rem;width:18px;text-align:center;flex-shrink:0}
+.fc-subjects{margin-top:10px;padding-top:10px;border-top:1px solid var(--light-gray)}
+.fc-subjects-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+.fc-subject-chips{display:flex;gap:5px;flex-wrap:wrap}
+.fc-chip{font-size:.6rem;font-weight:800;border:1.5px solid var(--black);padding:3px 8px;color:var(--black)}
+.fc-actions{padding:12px 18px;border-top:2px solid var(--black);display:flex;gap:8px}
+.fc-btn{font-size:.6rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border:2px solid;cursor:pointer;font-family:var(--font);transition:all .15s;flex:1;text-align:center}
+.fc-btn-black{background:var(--black);color:var(--white);border-color:var(--black)}
+.fc-btn-black:hover{background:var(--red);border-color:var(--red)}
+.fc-btn-outline{background:var(--white);color:var(--black);border-color:var(--black)}
+.fc-btn-outline:hover{background:var(--off-white)}
+.avail-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.avail-dot.green{background:var(--success)}
+.avail-dot.red{background:var(--red)}
+.avail-dot.yellow{background:#f59e0b}
+
+/* HOD CARD FULL WIDTH */
+.hod-full{background:var(--white);border:3px solid var(--red);margin-bottom:20px;display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;gap:0}
+.hod-left{background:var(--red);padding:28px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-width:140px}
+.hod-avatar{width:64px;height:64px;background:var(--white);border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:var(--red)}
+.hod-title{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.hod-name{font-size:.92rem;font-weight:900;color:var(--white);text-align:center;line-height:1.3}
+.hod-mid{padding:24px;border-right:2px solid var(--border)}
+.hod-mid-name{font-size:1.3rem;font-weight:900;color:var(--black);margin-bottom:4px}
+.hod-mid-desig{font-size:.78rem;font-weight:700;color:var(--gray);margin-bottom:16px}
+.hod-details{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hod-detail-row{display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:var(--dark-gray)}
+.hod-right{padding:24px;display:flex;flex-direction:column;gap:10px;justify-content:center;min-width:160px}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);font-size:.82rem;font-weight:900;padding:14px 28px;border:2px solid rgba(255,255,255,.15);z-index:999;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* NO RESULTS */
+.no-results{text-align:center;padding:60px 20px;color:var(--gray);grid-column:1/-1}
+.nr-icon{font-size:2.5rem;margin-bottom:12px}
+.nr-text{font-size:1rem;font-weight:900;color:var(--black);margin-bottom:6px}
+.nr-sub{font-size:.82rem;font-weight:700;color:var(--gray)}
+
+@media(max-width:1100px){.faculty-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .faculty-grid{grid-template-columns:1fr}
+  .hod-full{grid-template-columns:1fr}
+  .hod-left{flex-direction:row;min-width:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div><div class="tb-name">Anoop K.</div><div class="tb-role">4SF23CS021 · CSE IV</div></div>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="examtracker.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+    <a href="timetable.html" class="nav-item"><span class="icon">📚</span> Timetable</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item"><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+    <a href="faculty.html" class="nav-item active"><span class="icon">👨‍🏫</span> Faculty Directory</a>
+    <a href="campusmap.html" class="nav-item"><span class="icon">📍</span> Campus Map</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div><div class="su-name">Anoop K.</div><div class="su-roll">4SF23CS021</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">✦ AI-POWERED SEARCH</div>
+        <div class="ph-title">Faculty Directory</div>
+        <div class="ph-sub">Find any faculty — cabin, hours, email, subjects. Ask in plain English.</div>
+      </div>
+      <div class="ph-stats">
+        <div class="ph-stat"><div class="ph-stat-val">24</div><div class="ph-stat-label">Total Faculty</div></div>
+        <div class="ph-stat"><div class="ph-stat-val" style="color:var(--lime)">18</div><div class="ph-stat-label">Available Now</div></div>
+        <div class="ph-stat"><div class="ph-stat-val">6</div><div class="ph-stat-label">Departments</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI SEARCH -->
+  <div class="search-bar">
+    <div class="search-icon">🔍</div>
+    <input class="search-input" id="searchInput" type="text" placeholder='Ask anything — "Who teaches CN?" or "HOD of CSE cabin number?"' oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter')aiSearch()">
+    <div class="search-ai-label">✦ AI</div>
+    <button class="search-btn" onclick="aiSearch()">Search</button>
+  </div>
+
+  <!-- AI RESULT -->
+  <div class="ai-result" id="aiResult">
+    <div class="ai-result-header">
+      <span>✦</span>
+      <span class="ai-result-label">CampusAI Answer</span>
+    </div>
+    <div class="ai-result-body" id="aiResultText"></div>
+  </div>
+
+  <!-- DEPT FILTER -->
+  <div class="dept-filter">
+    <button class="dept-btn active" onclick="setDept(this,'all')">All Departments</button>
+    <button class="dept-btn" onclick="setDept(this,'CSE')">CSE</button>
+    <button class="dept-btn" onclick="setDept(this,'ECE')">ECE</button>
+    <button class="dept-btn" onclick="setDept(this,'MECH')">Mech</button>
+    <button class="dept-btn" onclick="setDept(this,'CIVIL')">Civil</button>
+    <button class="dept-btn" onclick="setDept(this,'MATH')">Mathematics</button>
+    <button class="dept-btn" onclick="setDept(this,'PHY')">Physics</button>
+  </div>
+
+  <!-- HOD CARD -->
+  <div class="hod-full" id="hodCard">
+    <div class="hod-left">
+      <div class="hod-avatar">RN</div>
+      <div>
+        <div class="hod-title">Head of Department</div>
+        <div class="hod-name">Dr. Ramesh S. Nair</div>
+      </div>
+    </div>
+    <div class="hod-mid">
+      <div class="hod-mid-name">Dr. Ramesh S. Nair</div>
+      <div class="hod-mid-desig">Professor & HOD — Computer Science & Engineering</div>
+      <div class="hod-details">
+        <div class="hod-detail-row">📍 Room 405, CSE Block</div>
+        <div class="hod-detail-row">📧 hod.cse@sahyadri.edu.in</div>
+        <div class="hod-detail-row">📞 Ext: 2204</div>
+        <div class="hod-detail-row">🕐 Mon, Wed, Fri · 11am–1pm</div>
+        <div class="hod-detail-row"><div class="avail-dot green"></div> Available Now</div>
+        <div class="hod-detail-row">🎓 PhD — IISc Bangalore</div>
+      </div>
+    </div>
+    <div class="hod-right">
+      <button class="fc-btn fc-btn-black" onclick="showToast('📧 Email copied: hod.cse@sahyadri.edu.in')">📧 Send Email</button>
+      <button class="fc-btn fc-btn-outline" onclick="showToast('📅 Appointment request sent!')">📅 Book Appointment</button>
+    </div>
+  </div>
+
+  <!-- FACULTY GRID -->
+  <div class="faculty-grid" id="facultyGrid"></div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FACULTY = [
+  { id:1,  init:'SS', name:'Prof. Sunil Sharma',     desig:'Associate Professor', dept:'CSE',  cabin:'Room 301, CSE Block', email:'s.sharma@sahyadri.edu.in',   ext:'2210', hours:'Mon–Fri 10am–12pm', avail:'available', subjects:['Computer Networks','CN Lab'],        badge:'prof'  },
+  { id:2,  init:'AK', name:'Prof. Anita Kumar',      desig:'Assistant Professor', dept:'CSE',  cabin:'Room 302, CSE Block', email:'a.kumar@sahyadri.edu.in',    ext:'2211', hours:'Tue, Thu 2pm–4pm',  avail:'busy',      subjects:['Microprocessors','MES Lab'],       badge:'asst'  },
+  { id:3,  init:'VN', name:'Prof. Vijay Nair',       desig:'Associate Professor', dept:'CSE',  cabin:'Room 303, CSE Block', email:'v.nair@sahyadri.edu.in',     ext:'2212', hours:'Mon–Wed 11am–1pm',  avail:'available', subjects:['DAA','Algorithm Design'],          badge:'prof'  },
+  { id:4,  init:'MP', name:'Prof. Meena Patel',      desig:'Assistant Professor', dept:'CSE',  cabin:'Room 304, CSE Block', email:'m.patel@sahyadri.edu.in',    ext:'2213', hours:'Daily 9am–11am',    avail:'available', subjects:['DBMS','SQL Lab'],                  badge:'asst'  },
+  { id:5,  init:'RR', name:'Prof. Rajan Rao',        desig:'Professor',           dept:'CSE',  cabin:'Room 405, CSE Block', email:'r.rao@sahyadri.edu.in',      ext:'2214', hours:'Fri 10am–12pm',     avail:'absent',    subjects:['Software Engineering','SE Lab'],   badge:'prof'  },
+  { id:6,  init:'SK', name:'Prof. Sita Krishna',     desig:'Assistant Professor', dept:'CSE',  cabin:'Room 302, CSE Block', email:'s.krishna@sahyadri.edu.in',  ext:'2215', hours:'Mon, Wed 3pm–5pm',  avail:'available', subjects:['Python Programming','Web Dev'],     badge:'asst'  },
+  { id:7,  init:'DM', name:'Dr. Deepak Menon',       desig:'Associate Professor', dept:'ECE',  cabin:'Room 201, ECE Block', email:'d.menon@sahyadri.edu.in',    ext:'2301', hours:'Tue, Thu 10am–12pm',avail:'available', subjects:['Digital Electronics','VLSI'],      badge:'prof'  },
+  { id:8,  init:'PR', name:'Prof. Priya Reddy',      desig:'Assistant Professor', dept:'ECE',  cabin:'Room 202, ECE Block', email:'p.reddy@sahyadri.edu.in',    ext:'2302', hours:'Mon–Fri 11am–1pm',  avail:'busy',      subjects:['Signals & Systems','DSP'],         badge:'asst'  },
+  { id:9,  init:'KM', name:'Dr. Kiran More',         desig:'Professor',           dept:'MATH', cabin:'Room 101, Main Block', email:'k.more@sahyadri.edu.in',    ext:'2401', hours:'Daily 10am–12pm',   avail:'available', subjects:['Engineering Maths','Calculus'],     badge:'prof'  },
+  { id:10, init:'LJ', name:'Prof. Leena Joshi',      desig:'Assistant Professor', dept:'PHY',  cabin:'Room 102, Main Block', email:'l.joshi@sahyadri.edu.in',   ext:'2402', hours:'Mon, Wed 9am–11am', avail:'available', subjects:['Engineering Physics','Optics'],     badge:'asst'  },
+];
+
+let activeDept = 'all';
+let searchQuery = '';
+
+const AI_ANSWERS = {
+  'who teaches cn':         'Computer Networks (CN) is taught by <strong>Prof. Sunil Sharma</strong> (Room 301, CSE Block). CN Lab is also handled by Prof. Sharma. Office hours: Mon–Fri 10am–12pm.',
+  'who teaches computer networks': 'Computer Networks is taught by <strong>Prof. Sunil Sharma</strong> — Room 301, CSE Block, ext 2210. Office hours Mon–Fri 10am–12pm.',
+  'hod of cse':             'The HOD of CSE is <strong>Dr. Ramesh S. Nair</strong>. Cabin: Room 405, CSE Block. Email: hod.cse@sahyadri.edu.in. Office hours: Mon, Wed, Fri 11am–1pm. Extension: 2204.',
+  'hod cabin':              '<strong>Dr. Ramesh S. Nair</strong> (HOD, CSE) is in <strong>Room 405, CSE Block</strong>. Available Mon, Wed, Fri 11am–1pm.',
+  'who teaches daa':        'DAA is taught by <strong>Prof. Vijay Nair</strong> — Room 303, CSE Block. Office hours Mon–Wed 11am–1pm. Extension: 2212.',
+  'who teaches dbms':       'DBMS is taught by <strong>Prof. Meena Patel</strong> — Room 304, CSE Block. Office hours Daily 9am–11am. Extension: 2213.',
+  'who teaches mes':        'Microprocessors & Embedded Systems (MES) is handled by <strong>Prof. Anita Kumar</strong> — Room 302, CSE Block. Office hours Tue, Thu 2pm–4pm.',
+  'available faculty':      'Currently available faculty: <strong>Prof. Sunil Sharma, Prof. Vijay Nair, Prof. Meena Patel, Prof. Sita Krishna, Dr. Deepak Menon, Dr. Kiran More, Prof. Leena Joshi</strong>. They are in their cabins during office hours.',
+};
+
+function getAIAnswer(query) {
+  const q = query.toLowerCase().replace(/[?!.]/g, '').trim();
+  for (const [key, val] of Object.entries(AI_ANSWERS)) {
+    if (q.includes(key)) return val;
+  }
+  return null;
+}
+
+function aiSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  const answer = getAIAnswer(q);
+  const resultBox = document.getElementById('aiResult');
+  const resultText = document.getElementById('aiResultText');
+  if (answer) {
+    resultText.innerHTML = answer;
+    resultBox.classList.add('show');
+  } else {
+    resultText.innerHTML = `Searching for "<strong>${q}</strong>" — showing all matching faculty below. For specific queries, try: "Who teaches CN?" or "HOD of CSE cabin".`;
+    resultBox.classList.add('show');
+  }
+  searchQuery = q.toLowerCase();
+  renderGrid();
+}
+
+function handleSearch(val) {
+  searchQuery = val.toLowerCase();
+  if (!val) {
+    document.getElementById('aiResult').classList.remove('show');
+  }
+  renderGrid();
+}
+
+function setDept(btn, dept) {
+  document.querySelectorAll('.dept-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeDept = dept;
+  const hodCard = document.getElementById('hodCard');
+  hodCard.style.display = (dept === 'all' || dept === 'CSE') ? 'grid' : 'none';
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('facultyGrid');
+  let filtered = FACULTY.filter(f => {
+    const deptMatch = activeDept === 'all' || f.dept === activeDept;
+    const searchMatch = !searchQuery ||
+      f.name.toLowerCase().includes(searchQuery) ||
+      f.subjects.some(s => s.toLowerCase().includes(searchQuery)) ||
+      f.cabin.toLowerCase().includes(searchQuery) ||
+      f.dept.toLowerCase().includes(searchQuery);
+    return deptMatch && searchMatch;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="no-results"><div class="nr-icon">🔍</div><div class="nr-text">No faculty found</div><div class="nr-sub">Try a different search or department filter</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(f => {
+    const availColor = f.avail === 'available' ? 'green' : f.avail === 'busy' ? 'yellow' : 'red';
+    const availText  = f.avail === 'available' ? 'Available Now' : f.avail === 'busy' ? 'In Class' : 'Not In Campus';
+    const badgeCls   = f.badge === 'prof' ? 'prof-badge' : 'asst-badge';
+    const badgeText  = f.badge === 'prof' ? 'PROFESSOR' : 'ASST. PROFESSOR';
+    return `
+    <div class="faculty-card" onclick="showToast('📧 ${f.email}')">
+      <div class="fc-header">
+        <div class="fc-avatar">${f.init}</div>
+        <div>
+          <div class="fc-name">${f.name}</div>
+          <div class="fc-designation">${f.desig} · ${f.dept}</div>
+          <span class="fc-badge ${badgeCls}">${badgeText}</span>
+        </div>
+      </div>
+      <div class="fc-body">
+        <div class="fc-row"><span class="fc-row-icon">📍</span>${f.cabin}</div>
+        <div class="fc-row"><span class="fc-row-icon">📧</span>${f.email}</div>
+        <div class="fc-row"><span class="fc-row-icon">📞</span>Ext: ${f.ext}</div>
+        <div class="fc-row"><span class="fc-row-icon">🕐</span>${f.hours}</div>
+        <div class="fc-row"><div class="avail-dot ${availColor}"></div>${availText}</div>
+        <div class="fc-subjects">
+          <div class="fc-subjects-label">Subjects Handled</div>
+          <div class="fc-subject-chips">${f.subjects.map(s=>`<span class="fc-chip">${s}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="fc-actions">
+        <button class="fc-btn fc-btn-black" onclick="event.stopPropagation();showToast('📧 Email copied: ${f.email}')">Email</button>
+        <button class="fc-btn fc-btn-outline" onclick="event.stopPropagation();showToast('📅 Appointment sent to ${f.name}!')">Appoint</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+renderGrid();
+</script>
+</body>
+</html>

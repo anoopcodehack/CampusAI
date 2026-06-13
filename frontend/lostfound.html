@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost & Found — CampusAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#e5473b;--red-dark:#c93a30;--black:#111111;--white:#ffffff;
+  --off-white:#f9f9f7;--light-gray:#f2f2f0;--gray:#888888;--dark-gray:#444444;
+  --border:#e0e0e0;--lime:#c8f000;--lime-dark:#a0c000;--success:#22c55e;
+  --warn:#f59e0b;--font:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off-white);color:var(--black);font-family:var(--font);min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:64px 1fr}
+a{color:inherit;text-decoration:none}
+
+/* TOP BAR */
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:2px solid var(--black);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:200}
+.topbar-logo{display:inline-flex;flex-direction:column;border:2.5px solid var(--black);padding:5px 10px;line-height:1}
+.tl1{font-size:.78rem;font-weight:900;letter-spacing:3px;color:var(--black)}
+.tl2{font-size:.55rem;font-weight:900;letter-spacing:3px;color:var(--gray);margin-top:1px}
+.tb-user{display:flex;align-items:center;gap:10px;padding:6px 12px;border:2px solid var(--black)}
+.tb-avatar{width:28px;height:28px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900}
+.tb-name{font-size:.82rem;font-weight:900}
+.tb-role{font-size:.6rem;font-weight:700;color:var(--gray)}
+
+/* SIDEBAR */
+.sidebar{background:var(--black);border-right:2px solid var(--black);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.sidebar-section{padding:20px 0}
+.sidebar-section+.sidebar-section{border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-label{font-size:.52rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 20px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;font-size:.82rem;font-weight:800;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--lime);background:rgba(200,240,0,.06);border-left-color:var(--lime)}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:.52rem;font-weight:900;padding:2px 7px}
+.nb-red{background:var(--red);color:var(--white)}
+.nb-lime{background:var(--lime);color:var(--black)}
+.sidebar-bottom{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;background:var(--red);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900}
+.su-name{font-size:.82rem;font-weight:900;color:var(--white)}
+.su-roll{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35)}
+
+/* MAIN */
+.main{padding:32px 28px 80px;overflow-y:auto}
+
+/* PAGE HEADER */
+.page-header{background:var(--black);border:2px solid var(--black);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px)}
+.ph-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.ph-tag{font-size:.58rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.ph-title{font-size:1.7rem;font-weight:900;color:var(--white);letter-spacing:-.5px}
+.ph-sub{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:4px}
+.ph-stats{display:flex;gap:0}
+.ph-stat{padding:14px 20px;border-left:2px solid rgba(255,255,255,.1);text-align:center}
+.ph-stat-val{font-size:1.6rem;font-weight:900;color:var(--white);line-height:1}
+.ph-stat-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:3px}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);border:2px solid var(--black);background:var(--white);margin-bottom:24px}
+.sb-block{padding:18px 20px;border-right:2px solid var(--black);position:relative}
+.sb-block:last-child{border-right:none}
+.sb-lbl{font-size:.52rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:5px}
+.sb-val{font-size:1.8rem;font-weight:900;line-height:1}
+.sb-sub{font-size:.68rem;font-weight:700;color:var(--gray);margin-top:3px}
+.sb-bar{position:absolute;bottom:0;left:0;right:0;height:3px}
+
+/* AI MATCH ALERT — the star of the show */
+.match-alert{border:3px solid var(--lime);background:var(--white);margin-bottom:24px;animation:matchPop .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes matchPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.ma-header{background:var(--lime);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.ma-title{font-size:.65rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--black);display:flex;align-items:center;gap:8px}
+.ma-pulse{width:8px;height:8px;background:var(--black);border-radius:50%;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+.ma-badge{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:var(--black);color:var(--lime);padding:3px 10px}
+.ma-body{padding:20px}
+.ma-match-row{display:grid;grid-template-columns:1fr 80px 1fr;gap:0;align-items:center;border:2px solid var(--black)}
+.ma-card{padding:18px}
+.ma-card.lost-card{background:var(--off-white)}
+.ma-card.found-card{background:#f0fff4}
+.ma-card-type{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:3px 9px;display:inline-block;margin-bottom:10px}
+.type-lost{background:var(--red);color:var(--white)}
+.type-found{background:var(--success);color:var(--white)}
+.ma-item-name{font-size:1.05rem;font-weight:900;color:var(--black);margin-bottom:6px}
+.ma-item-desc{font-size:.78rem;font-weight:700;color:var(--dark-gray);line-height:1.5;margin-bottom:8px}
+.ma-item-meta{display:flex;gap:10px;flex-wrap:wrap}
+.meta-chip{font-size:.6rem;font-weight:800;color:var(--dark-gray);border:1.5px solid var(--border);padding:3px 8px;display:flex;align-items:center;gap:4px}
+.ma-connector{background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 8px;border-left:2px solid var(--black);border-right:2px solid var(--black)}
+.ma-connector-pct{font-size:1.4rem;font-weight:900;color:var(--lime)}
+.ma-connector-label{font-size:.45rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);text-align:center;line-height:1.4}
+.ma-ai-reason{margin-top:14px;background:var(--off-white);border-left:4px solid var(--lime);padding:12px 16px}
+.ma-ai-label{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.ma-ai-text{font-size:.82rem;font-weight:700;color:var(--dark-gray);line-height:1.6}
+.ma-ai-text strong{color:var(--black)}
+.ma-actions{display:flex;gap:10px;margin-top:16px}
+.btn-claim{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--black);color:var(--white);border:2px solid var(--black);padding:11px 22px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn-claim:hover{background:var(--red);border-color:var(--red)}
+.btn-dismiss{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--white);color:var(--black);border:2px solid var(--border);padding:11px 22px;cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-dismiss:hover{border-color:var(--black)}
+
+/* TABS */
+.tab-bar{display:flex;border:2px solid var(--black);background:var(--white);margin-bottom:20px}
+.tab-btn{flex:1;padding:12px;text-align:center;font-size:.72rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-right:2px solid var(--black);background:var(--white);color:var(--gray);transition:all .15s;font-family:var(--font);border-top:none;border-bottom:none;border-left:none}
+.tab-btn:last-child{border-right:none}
+.tab-btn:hover{background:var(--off-white)}
+.tab-btn.active-lost{background:var(--red);color:var(--white)}
+.tab-btn.active-found{background:var(--success);color:var(--white)}
+.tab-btn.active-matched{background:var(--black);color:var(--lime)}
+
+/* POST FORM */
+.post-form{background:var(--white);border:2px solid var(--black);margin-bottom:24px}
+.pf-header{background:var(--black);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.pf-title{font-size:.62rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--white)}
+.pf-toggle{display:flex;gap:0;border:2px solid rgba(255,255,255,.2)}
+.pf-toggle-btn{padding:6px 14px;font-size:.62rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);border:none;font-family:var(--font);transition:all .15s}
+.pf-toggle-btn.tactive-lost{background:var(--red);color:var(--white)}
+.pf-toggle-btn.tactive-found{background:var(--success);color:var(--white)}
+.pf-body{padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end}
+.pf-field{display:flex;flex-direction:column;gap:6px}
+.pf-label{font-size:.55rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray)}
+.pf-input{border:2px solid var(--black);padding:11px 13px;font-family:var(--font);font-size:.88rem;font-weight:700;color:var(--black);outline:none;background:var(--white);transition:border-color .2s;border-radius:0}
+.pf-input:focus{border-color:var(--red);background:var(--off-white)}
+.pf-input::placeholder{color:var(--border);font-weight:600}
+select.pf-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23111' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.btn-post{font-size:.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--red);color:var(--white);border:2px solid var(--red);padding:13px 22px;cursor:pointer;font-family:var(--font);white-space:nowrap;display:flex;align-items:center;gap:7px;transition:all .2s;height:fit-content;align-self:end}
+.btn-post:hover{background:var(--red-dark);border-color:var(--red-dark)}
+.btn-post.found-mode{background:var(--success);border-color:var(--success)}
+.btn-post.found-mode:hover{background:#16a34a;border-color:#16a34a}
+
+/* AI SCANNING INDICATOR */
+.ai-scanning{background:var(--black);border:2px solid var(--black);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.scan-dots{display:flex;gap:4px}
+.scan-dots span{width:6px;height:6px;background:var(--lime);border-radius:50%;animation:scanBounce .8s infinite}
+.scan-dots span:nth-child(2){animation-delay:.15s}
+.scan-dots span:nth-child(3){animation-delay:.3s}
+@keyframes scanBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.scan-text{font-size:.78rem;font-weight:800;color:var(--white)}
+.scan-text span{color:var(--lime)}
+.scan-progress{flex:1;height:4px;background:rgba(255,255,255,.1);position:relative;overflow:hidden}
+.scan-progress-bar{height:100%;background:var(--lime);animation:scanProg 2s ease infinite}
+@keyframes scanProg{0%{width:0;margin-left:0}50%{width:60%;margin-left:0}100%{width:0;margin-left:100%}}
+
+/* ITEMS GRID */
+.items-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.item-card{background:var(--white);border:2px solid var(--black);transition:all .2s;cursor:pointer;position:relative}
+.item-card:hover{transform:translateY(-3px);box-shadow:4px 4px 0 var(--black)}
+.item-card.has-match{border-color:var(--lime);border-width:2px}
+.item-card.has-match::after{content:'MATCH FOUND';position:absolute;top:-1px;right:-1px;background:var(--lime);color:var(--black);font-size:.48rem;font-weight:900;letter-spacing:2px;padding:3px 8px}
+.ic-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--black)}
+.ic-type{font-size:.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:3px 9px}
+.ic-type.lost{background:var(--red);color:var(--white)}
+.ic-type.found{background:var(--success);color:var(--white)}
+.ic-type.matched{background:var(--lime);color:var(--black)}
+.ic-time{font-size:.62rem;font-weight:700;color:var(--gray)}
+.ic-body{padding:16px}
+.ic-emoji{font-size:1.8rem;margin-bottom:10px;display:block}
+.ic-name{font-size:.95rem;font-weight:900;color:var(--black);margin-bottom:5px}
+.ic-desc{font-size:.78rem;font-weight:700;color:var(--dark-gray);line-height:1.5;margin-bottom:10px}
+.ic-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ic-chip{font-size:.58rem;font-weight:800;border:1.5px solid var(--border);padding:3px 8px;color:var(--dark-gray);display:flex;align-items:center;gap:3px}
+.ic-match-preview{background:var(--off-white);border:1.5px solid var(--lime);padding:8px 10px;margin-top:6px}
+.ic-match-label{font-size:.5rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--lime-dark);margin-bottom:3px}
+.ic-match-text{font-size:.72rem;font-weight:800;color:var(--dark-gray)}
+.ic-match-pct{font-size:.7rem;font-weight:900;color:var(--success);float:right}
+.ic-poster{font-size:.65rem;font-weight:800;color:var(--gray);display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--light-gray)}
+.poster-avatar{width:20px;height:20px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:900}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border:3px solid var(--black);width:100%;max-width:560px;animation:modalIn .25s ease both;max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{background:var(--black);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0}
+.modal-h-title{font-size:.95rem;font-weight:900;color:var(--white)}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:1.2rem;cursor:pointer;transition:color .2s;font-size:1.4rem;line-height:1}
+.modal-close:hover{color:var(--white)}
+.modal-body{padding:24px}
+.modal-match-score{background:var(--lime);padding:20px;text-align:center;margin-bottom:20px}
+.mms-pct{font-size:3.5rem;font-weight:900;color:var(--black);line-height:1}
+.mms-label{font-size:.6rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,.5);margin-top:4px}
+.modal-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.modal-item-card{border:2px solid var(--black);padding:16px}
+.mic-type{font-size:.52rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;display:inline-block;margin-bottom:10px}
+.mic-name{font-size:1rem;font-weight:900;color:var(--black);margin-bottom:6px}
+.mic-detail{font-size:.78rem;font-weight:700;color:var(--dark-gray);line-height:1.55}
+.reasons-block{margin-bottom:20px}
+.reasons-title{font-size:.58rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
+.reason-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--light-gray)}
+.reason-row:last-child{border-bottom:none}
+.reason-icon{font-size:1rem;width:24px;text-align:center;flex-shrink:0}
+.reason-text{font-size:.82rem;font-weight:700;color:var(--dark-gray);flex:1}
+.reason-score{font-size:.72rem;font-weight:900;color:var(--success);background:#f0fff4;border:1.5px solid #86efac;padding:2px 8px}
+.modal-footer{padding:0 24px 24px;display:flex;gap:10px}
+.btn-modal-claim{flex:1;font-size:.78rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--black);color:var(--white);border:2px solid var(--black);padding:14px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.btn-modal-claim:hover{background:var(--red);border-color:var(--red)}
+.btn-modal-cancel{font-size:.78rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:var(--white);color:var(--black);border:2px solid var(--black);padding:14px 20px;cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-modal-cancel:hover{background:var(--off-white)}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);font-size:.82rem;font-weight:900;padding:14px 28px;border:2px solid rgba(255,255,255,.15);z-index:999;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .t-icon{font-size:1rem}
+
+@media(max-width:1100px){.items-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{grid-column:1}
+  .pf-body{grid-template-columns:1fr 1fr}
+  .items-grid{grid-template-columns:1fr}
+  .modal-cards{grid-template-columns:1fr}
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .sb-block:nth-child(2){border-right:none}
+  .sb-block:nth-child(3){border-top:2px solid var(--black)}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <span class="tl1">CAMPUS AI</span>
+    <span class="tl2">PORTAL</span>
+  </a>
+  <div class="tb-user">
+    <div class="tb-avatar">AK</div>
+    <div>
+      <div class="tb-name">Anoop K.</div>
+      <div class="tb-role">4SF23CS021 · CSE IV</div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Main</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+    <a href="chat.html" class="nav-item"><span class="icon">🤖</span> Ask CampusAI <span class="nav-badge nb-lime">AI</span></a>
+    <a href="noticeboard.html" class="nav-item"><span class="icon">📋</span> Notice Board <span class="nav-badge nb-red">3</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Academic</div>
+    <a href="attendance.html" class="nav-item"><span class="icon">📊</span> Attendance Risk</a>
+    <a href="dashboard.html" class="nav-item"><span class="icon">🗓️</span> Exam Tracker</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Campus</div>
+    <a href="lostfound.html" class="nav-item active"><span class="icon">🔍</span> Lost & Found <span class="nav-badge nb-lime">AI</span></a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Finance</div>
+    <a href="dashboard.html" class="nav-item"><span class="icon">💳</span> Fees <span class="nav-badge nb-red">DUE</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="su-av">AK</div>
+      <div>
+        <div class="su-name">Anoop K.</div>
+        <div class="su-roll">4SF23CS021</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-inner">
+      <div>
+        <div class="ph-tag">✦ AI-POWERED MATCHING ENGINE</div>
+        <div class="ph-title">Smart Lost & Found</div>
+        <div class="ph-sub">Post what you lost or found — CampusAI automatically matches items using color, category, location & description.</div>
+      </div>
+      <div class="ph-stats">
+        <div class="ph-stat">
+          <div class="ph-stat-val" id="matchCount">3</div>
+          <div class="ph-stat-label">Matches Made</div>
+        </div>
+        <div class="ph-stat">
+          <div class="ph-stat-val" id="openCount">8</div>
+          <div class="ph-stat-label">Open Items</div>
+        </div>
+        <div class="ph-stat">
+          <div class="ph-stat-val">94%</div>
+          <div class="ph-stat-label">Match Accuracy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="sb-block">
+      <div class="sb-lbl">Lost Items</div>
+      <div class="sb-val" style="color:var(--red)" id="lostCount">5</div>
+      <div class="sb-sub">awaiting match</div>
+      <div class="sb-bar" style="background:var(--red)"></div>
+    </div>
+    <div class="sb-block">
+      <div class="sb-lbl">Found Items</div>
+      <div class="sb-val" style="color:var(--success)" id="foundCount">3</div>
+      <div class="sb-sub">waiting for owner</div>
+      <div class="sb-bar" style="background:var(--success)"></div>
+    </div>
+    <div class="sb-block">
+      <div class="sb-lbl">AI Matches Today</div>
+      <div class="sb-val" style="color:var(--lime-dark)">3</div>
+      <div class="sb-sub">auto-detected by AI</div>
+      <div class="sb-bar" style="background:var(--lime)"></div>
+    </div>
+    <div class="sb-block">
+      <div class="sb-lbl">Reunited This Week</div>
+      <div class="sb-val">7</div>
+      <div class="sb-sub">items returned to owners</div>
+      <div class="sb-bar" style="background:var(--black)"></div>
+    </div>
+  </div>
+
+  <!-- AI MATCH ALERT -->
+  <div class="match-alert" id="matchAlert">
+    <div class="ma-header">
+      <div class="ma-title">
+        <div class="ma-pulse"></div>
+        ✦ CAMPUSAI FOUND A MATCH — 91% Confidence
+      </div>
+      <span class="ma-badge">NEW MATCH</span>
+    </div>
+    <div class="ma-body">
+      <div class="ma-match-row">
+        <div class="ma-card lost-card">
+          <span class="ma-card-type type-lost">🔴 LOST</span>
+          <div class="ma-item-name">Blue Backpack</div>
+          <div class="ma-item-desc">Blue Nike backpack with laptop compartment, lost near college canteen area. Has a small keychain attached to zip.</div>
+          <div class="ma-item-meta">
+            <span class="meta-chip">📍 Near Canteen</span>
+            <span class="meta-chip">🕐 2 hrs ago</span>
+            <span class="meta-chip">👤 Anoop K.</span>
+          </div>
+        </div>
+        <div class="ma-connector">
+          <div class="ma-connector-pct">91%</div>
+          <div class="ma-connector-label">MATCH<br>SCORE</div>
+          <div style="font-size:1.4rem;color:var(--lime)">⟷</div>
+        </div>
+        <div class="ma-card found-card">
+          <span class="ma-card-type type-found">🟢 FOUND</span>
+          <div class="ma-item-name">Blue Bag w/ Laptop</div>
+          <div class="ma-item-desc">Found a blue backpack (Nike logo visible) near the library entrance. Has a silver keychain on the zip. Kept at security desk.</div>
+          <div class="ma-item-meta">
+            <span class="meta-chip">📍 Library Entrance</span>
+            <span class="meta-chip">🕐 1 hr ago</span>
+            <span class="meta-chip">👤 Priya S.</span>
+          </div>
+        </div>
+      </div>
+      <div class="ma-ai-reason">
+        <div class="ma-ai-label">
+          <span style="width:6px;height:6px;background:var(--lime);border-radius:50%;animation:pulse 1.2s infinite;display:inline-block"></span>
+          WHY CAMPUSAI MATCHED THESE
+        </div>
+        <div class="ma-ai-text">
+          Both items are <strong>blue backpacks with a laptop compartment</strong>. The <strong>keychain detail</strong> mentioned in both posts is a rare distinguishing feature — high confidence match. Location difference (canteen → library) is consistent with typical campus movement patterns within the 1-hour timeframe.
+        </div>
+      </div>
+      <div class="ma-actions">
+        <button class="btn-claim" onclick="claimMatch()">
+          ✓ This Is Mine — Contact Finder
+        </button>
+        <button class="btn-dismiss" onclick="dismissMatch()">
+          Not a match
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST FORM -->
+  <div class="post-form">
+    <div class="pf-header">
+      <span class="pf-title">Post a New Item</span>
+      <div class="pf-toggle">
+        <button class="pf-toggle-btn tactive-lost" id="toggleLost" onclick="setPostMode('lost')">I Lost Something</button>
+        <button class="pf-toggle-btn" id="toggleFound" onclick="setPostMode('found')">I Found Something</button>
+      </div>
+    </div>
+    <div class="pf-body">
+      <div class="pf-field">
+        <label class="pf-label">Item Name</label>
+        <input class="pf-input" id="itemName" placeholder="e.g. Blue backpack, Water bottle..." >
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">Location</label>
+        <select class="pf-input" id="itemLocation">
+          <option value="">Select location...</option>
+          <option>Near Canteen</option>
+          <option>Library</option>
+          <option>Main Block</option>
+          <option>CSE Block</option>
+          <option>Hostel A</option>
+          <option>Hostel B</option>
+          <option>Parking Lot</option>
+          <option>Sports Ground</option>
+          <option>Seminar Hall</option>
+          <option>Lab Block</option>
+        </select>
+      </div>
+      <div class="pf-field">
+        <label class="pf-label">Description</label>
+        <input class="pf-input" id="itemDesc" placeholder="Color, brand, distinguishing features...">
+      </div>
+      <button class="btn-post" id="postBtn" onclick="postItem()">
+        Post & Scan
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- AI SCANNING INDICATOR -->
+  <div class="ai-scanning" id="scanIndicator" style="display:none">
+    <div class="scan-dots"><span></span><span></span><span></span></div>
+    <div class="scan-text">CampusAI is <span>scanning all items for matches...</span></div>
+    <div class="scan-progress"><div class="scan-progress-bar"></div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active-lost" id="tab-lost" onclick="setTab('lost')">🔴 Lost Items <span id="tabLostCount">(5)</span></button>
+    <button class="tab-btn" id="tab-found" onclick="setTab('found')">🟢 Found Items <span id="tabFoundCount">(3)</span></button>
+    <button class="tab-btn" id="tab-matched" onclick="setTab('matched')">✦ Matched <span id="tabMatchedCount">(3)</span></button>
+  </div>
+
+  <!-- ITEMS GRID -->
+  <div class="items-grid" id="itemsGrid"></div>
+
+</main>
+
+<!-- MATCH DETAIL MODAL -->
+<div class="modal-overlay" id="matchModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-h-title" id="modalTitle">AI Match Details</div>
+        <div style="font-size:.65rem;font-weight:700;color:rgba(255,255,255,.4);margin-top:3px" id="modalSub">Review the match and claim if it's yours</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-match-score">
+        <div class="mms-pct" id="modalPct">91%</div>
+        <div class="mms-label">AI Match Confidence Score</div>
+      </div>
+      <div class="modal-cards" id="modalCards"></div>
+      <div class="reasons-block">
+        <div class="reasons-title">Why CampusAI matched these items</div>
+        <div id="modalReasons"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-claim" onclick="handleClaim()">✓ This Is Mine — Notify Finder</button>
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="t-icon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ── DATA ──
+let postMode = 'lost';
+let activeTab = 'lost';
+
+const ITEMS = [
+  {
+    id:1, type:'lost', emoji:'🎒', name:'Blue Nike Backpack', category:'Bag',
+    desc:'Blue Nike backpack with laptop compartment. Has a small silver keychain on zip.',
+    location:'Near Canteen', time:'2 hrs ago', poster:'Anoop K.', posterInit:'AK',
+    matchId:10, matchScore:91, status:'open'
+  },
+  {
+    id:2, type:'lost', emoji:'🔑', name:'Key Bundle (3 keys)', category:'Keys',
+    desc:'3 keys on a red ring, one key has a Superman sticker. Very important.',
+    location:'CSE Block', time:'4 hrs ago', poster:'Rahul M.', posterInit:'RM',
+    matchId:11, matchScore:88, status:'open'
+  },
+  {
+    id:3, type:'lost', emoji:'💳', name:'Student ID Card', category:'ID / Cards',
+    desc:'VTU student ID card, name Sneha Rao, IV semester CSE.',
+    location:'Library', time:'1 day ago', poster:'Sneha R.', posterInit:'SR',
+    matchId:12, matchScore:96, status:'open'
+  },
+  {
+    id:4, type:'lost', emoji:'🎧', name:'Black Boat Earphones', category:'Electronics',
+    desc:'Black boat earphones with carry case, left them in the seminar hall.',
+    location:'Seminar Hall', time:'3 hrs ago', poster:'Kiran P.', posterInit:'KP',
+    matchId:null, matchScore:null, status:'open'
+  },
+  {
+    id:5, type:'lost', emoji:'📓', name:'Blue Notebook (CN)', category:'Books / Notes',
+    desc:'Computer Networks notes, blue cover, name written on first page.',
+    location:'Main Block', time:'5 hrs ago', poster:'Diya T.', posterInit:'DT',
+    matchId:null, matchScore:null, status:'open'
+  },
+  {
+    id:10, type:'found', emoji:'🎒', name:'Blue Bag w/ Laptop',category:'Bag',
+    desc:'Found a blue backpack (Nike logo) near library entrance. Silver keychain on zip. At security desk.',
+    location:'Library Entrance', time:'1 hr ago', poster:'Priya S.', posterInit:'PS',
+    matchId:1, matchScore:91, status:'open'
+  },
+  {
+    id:11, type:'found', emoji:'🔑', name:'Key Ring — 3 Keys', category:'Keys',
+    desc:'Found a red key ring with 3 keys. One key has a sticker on it. Found near CSE lab.',
+    location:'CSE Block Lab', time:'3 hrs ago', poster:'Arun V.', posterInit:'AV',
+    matchId:2, matchScore:88, status:'open'
+  },
+  {
+    id:12, type:'found', emoji:'💳', name:'Student ID — Sneha Rao', category:'ID / Cards',
+    desc:'Found a VTU student ID near the library reading room. Name: Sneha Rao, CSE.',
+    location:'Library', time:'22 hrs ago', poster:'Security Desk', posterInit:'SD',
+    matchId:3, matchScore:96, status:'open'
+  },
+];
+
+const MATCH_REASONS = {
+  '1-10':[
+    {icon:'🎨', text:'Color matches — both described as blue', score:'HIGH'},
+    {icon:'🏷️', text:'Brand matches — Nike mentioned in both posts', score:'HIGH'},
+    {icon:'🔑', text:'Keychain detail — rare distinguishing feature in both', score:'VERY HIGH'},
+    {icon:'💻', text:'Laptop compartment mentioned in both descriptions', score:'HIGH'},
+    {icon:'📍', text:'Canteen to Library — consistent movement pattern', score:'MEDIUM'},
+  ],
+  '2-11':[
+    {icon:'🔑', text:'Both describe a red key ring with 3 keys', score:'HIGH'},
+    {icon:'🎨', text:'Sticker on key mentioned in both posts', score:'VERY HIGH'},
+    {icon:'📍', text:'Same block (CSE) — very close proximity', score:'HIGH'},
+    {icon:'🕐', text:'Time gap of 1 hour — consistent with discovery delay', score:'MEDIUM'},
+  ],
+  '3-12':[
+    {icon:'👤', text:'Name "Sneha Rao" explicitly in found post', score:'VERY HIGH'},
+    {icon:'🏫', text:'Both mention CSE department, IV semester', score:'HIGH'},
+    {icon:'📍', text:'Both posts mention Library as location', score:'VERY HIGH'},
+    {icon:'💳', text:'Both classified as student ID card', score:'HIGH'},
+  ],
+};
+
+function getMatchedItems(){
+  return ITEMS.filter(i=> i.matchId && ITEMS.some(j=>j.id===i.matchId));
+}
+
+function renderItems(){
+  const grid = document.getElementById('itemsGrid');
+  let filtered;
+  if(activeTab==='lost') filtered = ITEMS.filter(i=>i.type==='lost');
+  else if(activeTab==='found') filtered = ITEMS.filter(i=>i.type==='found');
+  else filtered = getMatchedItems().filter(i=>i.type==='lost'); // show lost side of matches
+
+  if(filtered.length===0){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);font-weight:800;font-size:.9rem">No items in this category yet.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item=>{
+    const hasMatch = item.matchId !== null;
+    const matchedItem = hasMatch ? ITEMS.find(i=>i.id===item.matchId) : null;
+    return `
+    <div class="item-card ${hasMatch?'has-match':''}" onclick="${hasMatch?`openMatchModal(${item.id})`:''}">
+      <div class="ic-header">
+        <span class="ic-type ${hasMatch?'matched':item.type}">${hasMatch?'✦ MATCHED':item.type==='lost'?'🔴 LOST':'🟢 FOUND'}</span>
+        <span class="ic-time">${item.time}</span>
+      </div>
+      <div class="ic-body">
+        <span class="ic-emoji">${item.emoji}</span>
+        <div class="ic-name">${item.name}</div>
+        <div class="ic-desc">${item.desc}</div>
+        <div class="ic-chips">
+          <span class="ic-chip">📍 ${item.location}</span>
+          <span class="ic-chip">🏷️ ${item.category}</span>
+        </div>
+        ${hasMatch && matchedItem ? `
+        <div class="ic-match-preview">
+          <div class="ic-match-label">✦ AI MATCH FOUND <span class="ic-match-pct">${item.matchScore}%</span></div>
+          <div class="ic-match-text">"${matchedItem.name}" — ${matchedItem.location} · Click to view</div>
+        </div>` : ''}
+        <div class="ic-poster">
+          <div class="poster-avatar">${item.posterInit}</div>
+          Posted by ${item.poster}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setTab(tab){
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.className='tab-btn';
+  });
+  if(tab==='lost') document.getElementById('tab-lost').classList.add('active-lost');
+  else if(tab==='found') document.getElementById('tab-found').classList.add('active-found');
+  else document.getElementById('tab-matched').classList.add('active-matched');
+  renderItems();
+}
+
+function setPostMode(mode){
+  postMode = mode;
+  const lostBtn = document.getElementById('toggleLost');
+  const foundBtn = document.getElementById('toggleFound');
+  const postBtn = document.getElementById('postBtn');
+  lostBtn.className='pf-toggle-btn'+(mode==='lost'?' tactive-lost':'');
+  foundBtn.className='pf-toggle-btn'+(mode==='found'?' tactive-found':'');
+  postBtn.className='btn-post'+(mode==='found'?' found-mode':'');
+  postBtn.textContent = mode==='lost'?'Post & Scan ':'Post & Scan ';
+}
+
+function postItem(){
+  const name = document.getElementById('itemName').value.trim();
+  const loc = document.getElementById('itemLocation').value;
+  const desc = document.getElementById('itemDesc').value.trim();
+  if(!name || !loc || !desc){
+    showToast('⚠️','Fill in all fields before posting');
+    return;
+  }
+  // Show scanning
+  const scan = document.getElementById('scanIndicator');
+  scan.style.display='flex';
+  document.getElementById('itemName').value='';
+  document.getElementById('itemDesc').value='';
+  document.getElementById('itemLocation').value='';
+
+  showToast('📤','Item posted — CampusAI is scanning for matches...');
+
+  setTimeout(()=>{
+    scan.style.display='none';
+    // Simulate a match found
+    showToast('✦','CampusAI found a potential match! Check the match alert.');
+    // Re-show alert with new data
+    document.getElementById('matchAlert').style.animation='none';
+    setTimeout(()=>{
+      document.getElementById('matchAlert').style.animation='matchPop .4s cubic-bezier(.34,1.56,.64,1) both';
+    },10);
+    updateCounts();
+  }, 2800);
+}
+
+function updateCounts(){
+  const lost = ITEMS.filter(i=>i.type==='lost').length;
+  const found = ITEMS.filter(i=>i.type==='found').length;
+  const matched = getMatchedItems().length/2;
+  document.getElementById('lostCount').textContent=lost;
+  document.getElementById('foundCount').textContent=found;
+  document.getElementById('matchCount').textContent=matched;
+  document.getElementById('openCount').textContent=lost+found-matched*2;
+  document.getElementById('tabLostCount').textContent=`(${lost})`;
+  document.getElementById('tabFoundCount').textContent=`(${found})`;
+  document.getElementById('tabMatchedCount').textContent=`(${matched})`;
+}
+
+function openMatchModal(lostId){
+  const lostItem = ITEMS.find(i=>i.id===lostId);
+  const foundItem = ITEMS.find(i=>i.id===lostItem.matchId);
+  const key = `${Math.min(lostId,lostItem.matchId)}-${Math.max(lostId,lostItem.matchId)}`;
+  const reasons = MATCH_REASONS[key] || MATCH_REASONS[`${lostItem.matchId}-${lostId}`] || [];
+
+  document.getElementById('modalPct').textContent = lostItem.matchScore+'%';
+  document.getElementById('modalTitle').textContent = `Match: ${lostItem.name}`;
+
+  document.getElementById('modalCards').innerHTML = `
+    <div class="modal-item-card">
+      <span class="mic-type" style="background:var(--red);color:var(--white)">🔴 LOST</span>
+      <div class="mic-name">${lostItem.emoji} ${lostItem.name}</div>
+      <div class="mic-detail">${lostItem.desc}<br><br>📍 ${lostItem.location} · ${lostItem.time}<br>👤 ${lostItem.poster}</div>
+    </div>
+    <div class="modal-item-card" style="background:#f0fff4;border-color:var(--success)">
+      <span class="mic-type" style="background:var(--success);color:var(--white)">🟢 FOUND</span>
+      <div class="mic-name">${foundItem.emoji} ${foundItem.name}</div>
+      <div class="mic-detail">${foundItem.desc}<br><br>📍 ${foundItem.location} · ${foundItem.time}<br>👤 ${foundItem.poster}</div>
+    </div>`;
+
+  document.getElementById('modalReasons').innerHTML = reasons.map(r=>`
+    <div class="reason-row">
+      <span class="reason-icon">${r.icon}</span>
+      <span class="reason-text">${r.text}</span>
+      <span class="reason-score">${r.score}</span>
+    </div>`).join('');
+
+  document.getElementById('matchModal').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('matchModal').classList.remove('open'); }
+
+function handleClaim(){
+  closeModal();
+  showToast('✅','Notifying finder — they will contact you via your college email!');
+}
+
+function claimMatch(){
+  document.getElementById('matchAlert').style.opacity='0.5';
+  showToast('✅','Finder notified! They will contact you via college email shortly.');
+  setTimeout(()=>{document.getElementById('matchAlert').style.opacity='1'},3000);
+}
+
+function dismissMatch(){
+  document.getElementById('matchAlert').style.display='none';
+  showToast('👎','Dismissed. CampusAI will keep searching for better matches.');
+}
+
+function showToast(icon, msg){
+  const t = document.getElementById('toast');
+  document.querySelector('.t-icon').textContent=icon;
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+// INIT
+renderItems();
+updateCounts();
+</script>
+
+</body>
+</html>
